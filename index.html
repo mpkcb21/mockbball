@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Practice Code Window</title>
+<script>try{const t=localStorage.getItem('mockbball:theme');if(t)document.documentElement.dataset.theme=JSON.parse(t)}catch(_){}</script>
+<style>
+:root{
+ --bg:#d9d9d9;--app:#f2f2f2;--bar:#e6e6e6;--bar-edge:#c8c8c8;--card:#fff;--edge:#111;--line:#ddd;--line2:#ccc;
+ --text:#111;--muted:#555;--faint:#888;--btn:#D6D6D6;--btn-edge:#333;--input:#fff;--input-edge:#999;--hover:#f4f4f4;--th:#eee;
+ --chip:#eee;--chip-edge:#ddd;--mk:#e3f4e1;--mk-edge:#b9e0b4;--ms:#fbe3dd;--ms-edge:#f0bcb0;--playing:#fff4c2;--hit:#ffe066;
+ --tl:#eee;--strong:#111;--strong-text:#fff;--good:#2e7d32;--bad:#c62828;--accent:#ff3b30;--link:#0B3F86;--gold-text:#9a7b00;--pre:#f4f4f4;
+ --banner:#fff8d6;--banner-edge:#e8d48a;--selrow:#fff8d6;color-scheme:light}
+:root[data-theme=dark]{
+ --bg:#0b0d11;--app:#14171c;--bar:#1b1f26;--bar-edge:#2a2f38;--card:#181c22;--edge:#3b4250;--line:#2a2f38;--line2:#323844;
+ --text:#e6e8eb;--muted:#a3a9b3;--faint:#717885;--btn:#2a2f38;--btn-edge:#454c59;--input:#0f1217;--input-edge:#3b4250;--hover:#20252d;--th:#20252d;
+ --chip:#232831;--chip-edge:#343a46;--mk:#16341b;--mk-edge:#2b6a33;--ms:#3a1913;--ms-edge:#7a3326;--playing:#3a3312;--hit:#6b5a00;
+ --tl:#0f1217;--strong:#05070a;--strong-text:#f2f2f2;--good:#5fd06b;--bad:#ff7a66;--accent:#ff453a;--link:#8fb6ff;--gold-text:#F7D448;--pre:#0f1217;
+ --banner:#2e2a12;--banner-edge:#6b5a1a;--selrow:#262412;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;padding:12px;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;color:var(--text)}
+button,select,input{font-family:inherit}
+a{color:var(--link)}
+.app{max-width:1500px;margin:0 auto;background:var(--app);border:1px solid var(--bar-edge);border-radius:10px;font-size:12px;overflow:hidden}
+.bar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:var(--bar);padding:7px 10px;border-bottom:1px solid var(--bar-edge)}
+.foot{background:var(--bar);border-top:1px solid var(--bar-edge);padding:6px 10px;text-align:center;font-size:13px}
+.dot{width:11px;height:11px;border-radius:50%}
+.muted{color:var(--muted)}.faint{color:var(--faint)}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 470px;gap:0;align-items:start}
+body[data-tab=review] .main{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
+body[data-tab=review] #codeWin,body[data-tab=review] #keysBlk{display:none}
+body[data-tab=practices] .main{display:none}
+body:not([data-tab=practices]) #practicesView{display:none}
+body:not([data-tab=code]) .code-only{display:none!important}
+@media (max-width:1100px){.main,body[data-tab=review] .main{grid-template-columns:1fr}.right{order:-1}body[data-tab=review] .right{order:0}}
+.blk{background:var(--card);border:2px solid var(--edge);margin:8px 10px}
+.hd{border-bottom:2px solid var(--edge);text-align:center;padding:6px;font-size:13px;letter-spacing:.3px;position:relative}
+.hd::before{content:'';position:absolute;left:6px;top:7px;width:11px;height:11px;border:1px solid var(--faint);background:var(--card)}
+.g{display:grid;gap:0}
+.bt{border:1px solid var(--btn-edge);border-radius:0;height:38px;font-size:12px;color:var(--text);background:var(--btn);cursor:pointer;padding:0 6px;line-height:1.15}
+.bt:active{filter:brightness(.9)}
+.bt.sm{height:26px;border-radius:4px}
+.bt.sel{outline:3px solid var(--accent);outline-offset:-3px}
+.bt:disabled{opacity:.45;cursor:default}
+.bt small{display:block;font-size:10px;opacity:.7;font-weight:600}
+.gold{background:#F7D448;color:#111;border-color:#333}.blue{background:#0B3F86;color:#fff;border-color:#333}.grn{background:#4CBB47;color:#111;border-color:#333}.red{background:#E9502F;color:#fff;border-color:#333}.gry{background:var(--btn)}.blk-bg{background:var(--strong);color:var(--strong-text)}
+.seg-ctl{display:inline-flex}.seg-ctl .bt{border-radius:0;border-left-width:0}.seg-ctl .bt:first-child{border-radius:4px 0 0 4px;border-left-width:1px}.seg-ctl .bt:last-child{border-radius:0 4px 4px 0}
+.seg-ctl .bt.on{background:var(--strong);color:var(--strong-text)}
+.pos{height:40px;font-size:14px}
+.pos.on{outline:3px solid var(--strong);outline-offset:-4px}
+.blue.pos.on{outline-color:#F7D448}
+.f{display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--muted)}
+.f select,.f input{height:30px;font-size:12px;background:var(--input);color:var(--text);border:1px solid var(--input-edge);border-radius:4px;padding:0 4px}
+.txt{height:26px;font-size:12px;border:1px solid var(--input-edge);border-radius:4px;padding:0 6px;background:var(--input);color:var(--text)}
+.st{width:100%;border-collapse:collapse}
+.st td,.st th{border:1px solid var(--line2);padding:3px 4px;text-align:center;font-weight:400;font-size:11px;white-space:nowrap}
+.st th{background:var(--th);color:var(--muted)}
+.st td.cl{cursor:pointer;color:var(--link);font-weight:600}
+.st td.cl:hover{background:var(--hover);text-decoration:underline}
+.st td.cl.on{outline:2px solid var(--accent);outline-offset:-2px}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.srcbar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:6px;border-bottom:2px solid var(--edge)}
+.vwrap{background:#000;position:relative;aspect-ratio:16/9}
+.vwrap video{width:100%;height:100%;display:block}
+#ytBox{position:absolute;inset:0}
+#ytBox iframe{width:100%;height:100%;border:0;display:block}
+.vwrap.drag{outline:4px dashed #F7D448;outline-offset:-8px}
+#noVid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#ccc;font-size:14px;text-align:center;padding:16px}
+.transport{display:flex;gap:4px;flex-wrap:wrap;align-items:center;padding:6px;border-top:2px solid var(--edge)}
+.tl{position:relative;height:34px;background:var(--tl);border-top:2px solid var(--edge);cursor:pointer;overflow:hidden}
+.seg{position:absolute;top:4px;height:18px;border-right:1px solid var(--tl)}
+.seg.cur{outline:2px solid var(--accent);outline-offset:-2px;z-index:1}
+.tick{position:absolute;bottom:2px;width:2px;height:8px;background:var(--muted)}
+.tick.mk{background:#2e9e3a;height:10px}.tick.ms{background:#d63b1f;height:10px}
+#ph{position:absolute;top:0;bottom:0;width:2px;background:var(--accent);pointer-events:none;z-index:2}
+.clips{max-height:360px;overflow:auto}
+body[data-tab=review] .clips{max-height:520px}
+.clip{display:grid;grid-template-columns:44px 58px 104px 40px minmax(0,1fr) 22px;gap:6px;align-items:center;padding:5px 8px;border-bottom:1px solid var(--line);cursor:pointer}
+.clip:hover{background:var(--hover)}
+.clip.playing{background:var(--playing)}
+.pgroup{padding:4px 8px;background:var(--th);color:var(--muted);font-size:11px;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:1}
+.chip{display:inline-block;padding:1px 5px;border-radius:3px;font-size:10px;margin:1px 2px 1px 0;background:var(--chip);border:1px solid var(--chip-edge);color:var(--text)}
+.chip.mk{background:var(--mk);border-color:var(--mk-edge)}.chip.ms{background:var(--ms);border-color:var(--ms-edge)}
+.chip[data-seek]{cursor:pointer}.chip[data-seek]:hover{outline:1px solid var(--accent)}
+.chip.match{outline:2px solid var(--accent);outline-offset:-1px}
+.tm{display:inline-block;width:12px;height:12px;border:1px solid var(--btn-edge);vertical-align:middle}
+.x{border:0;background:none;color:var(--faint);cursor:pointer;font-size:14px;padding:0}
+.x:hover{color:var(--bad)}
+.filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:8px;border-bottom:1px solid var(--line)}
+.banner{display:flex;gap:8px;align-items:center;padding:6px 8px;background:var(--banner);border-bottom:1px solid var(--banner-edge);font-size:12px}
+@media (max-width:640px){.filters{grid-template-columns:repeat(2,minmax(0,1fr))}.clip{grid-template-columns:36px 50px 90px minmax(0,1fr) 22px}.clip .dur{display:none}}
+.log{max-height:240px;overflow:auto;font-size:11px;line-height:1.7}
+.log div{display:flex;gap:8px;align-items:center;cursor:pointer;padding:0 4px}
+.log div:hover{background:var(--hover)}
+.shotform{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.zonetag{font-size:18px;font-weight:500;padding:6px 8px;border:1px solid var(--input-edge);border-radius:4px;background:var(--input);margin-top:8px}
+.hidden{display:none!important}
+.keys{display:grid;grid-template-columns:1fr 1fr;gap:0 12px;padding:6px 10px 8px;font-size:11px}
+.keys h4{grid-column:1/-1;margin:6px 0 2px;font-size:10px;letter-spacing:.5px;color:var(--faint);font-weight:600;text-transform:uppercase}
+.kr{display:flex;align-items:center;gap:6px;padding:1px 2px;border-radius:3px;transition:background .3s}
+kbd{display:inline-block;min-width:20px;text-align:center;padding:1px 4px;border:1px solid var(--input-edge);border-bottom-width:2px;border-radius:4px;background:var(--chip);font-family:ui-monospace,Menlo,monospace;font-size:10.5px;font-weight:600;color:var(--text)}
+.hit{background:var(--hit)!important;transition:none}
+.bt.hit{filter:brightness(1.15);outline:3px solid var(--accent);outline-offset:-3px}
+#keyLive{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--faint);margin-left:6px;vertical-align:middle}
+#keyLive.on{background:#28c840}
+details.menu{position:relative}
+details.menu summary{list-style:none}
+details.menu summary::-webkit-details-marker{display:none}
+details.menu .pop{position:absolute;right:0;top:30px;z-index:20;background:var(--card);border:1px solid var(--input-edge);border-radius:6px;padding:6px;display:flex;flex-direction:column;gap:4px;min-width:170px;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+#cloudBtn[data-s=ok]{background:var(--mk)}#cloudBtn[data-s=err]{background:var(--ms)}
+dialog{border:2px solid var(--edge);border-radius:8px;padding:14px;max-width:680px;width:calc(100% - 32px);font-size:12px;background:var(--card);color:var(--text)}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+dialog pre{background:var(--pre);border:1px solid var(--line);padding:8px;font-size:11px;overflow:auto;white-space:pre;color:var(--text);max-height:320px}
+.sec{font-size:12px;color:var(--muted);margin:8px 0 4px}
+/* practices tab */
+.newp{display:grid;grid-template-columns:1.2fr 150px 1.6fr auto auto;gap:6px;align-items:end;padding:10px;border-bottom:1px solid var(--line)}
+@media (max-width:900px){.newp{grid-template-columns:1fr 1fr}}
+.ptools{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:8px 10px;border-bottom:1px solid var(--line)}
+.ptable{width:100%;border-collapse:collapse}
+.ptable th{background:var(--th);color:var(--muted);font-weight:400;font-size:11px;text-align:left;padding:5px 6px;border-bottom:1px solid var(--line2)}
+.ptable td{padding:4px 6px;border-bottom:1px solid var(--line);font-size:12px;vertical-align:middle}
+.ptable tr.on td{background:var(--selrow)}
+.ptable .txt{width:100%}
+.ptable td.n{text-align:center;white-space:nowrap}
+.badge{display:inline-block;font-size:10px;padding:0 4px;border-radius:3px;border:1px solid var(--chip-edge);background:var(--chip);color:var(--muted);margin-right:2px}
+.pwrap{overflow-x:auto}
+</style>
+</head>
+<body data-tab="code">
+<div id="focusSink" tabindex="-1" style="position:fixed;left:-9999px;top:0"></div>
+<div class="app">
+<div class="bar">
+ <span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span>
+ <span style="margin-left:8px;font-weight:500">Practice CW</span>
+ <span class="seg-ctl" style="margin-left:6px"><button class="bt sm" id="tabPractices">Practices</button><button class="bt sm on" id="tabCode">Code</button><button class="bt sm" id="tabReview">Review</button></span>
+ <input id="sessName" class="txt code-only" placeholder="Practice name" style="margin-left:6px;width:200px">
+ <input id="sessDate" type="date" class="txt code-only" style="width:140px">
+ <span id="reviewing" class="muted" style="margin-left:6px"></span>
+ <span style="flex:1"></span>
+ <button class="bt gry sm code-only" id="undo">Undo last</button>
+ <details class="menu"><summary class="bt gry sm" style="display:inline-flex;align-items:center">Export ▾</summary><div class="pop">
+  <button class="bt gry sm" id="expJson">Save practice .json</button>
+  <label class="bt gry sm" style="display:inline-flex;align-items:center">Open practice .json<input type="file" id="impJson" accept=".json,application/json" hidden></label>
+  <button class="bt gry sm" id="expCsv">Filtered clips .csv</button>
+  <button class="bt gry sm" id="expSh">ffmpeg cut script</button>
+ </div></details>
+ <button class="bt gry sm" id="cloudBtn">☁ Cloud: off</button>
+ <button class="bt gry sm" id="themeBtn" title="Toggle light / dark">☀ Light</button>
+ <button class="bt gry sm code-only" id="reset">Reset</button>
+</div>
+
+<!-- PRACTICES TAB -->
+<div id="practicesView">
+ <div class="blk">
+  <div class="hd">PRACTICES</div>
+  <div class="newp">
+   <label class="f">New practice<input id="npName" class="txt" placeholder="e.g. Tuesday team practice"></label>
+   <label class="f">Date<input id="npDate" type="date" class="txt"></label>
+   <label class="f">YouTube link (live or recorded — optional)<input id="npLink" class="txt" placeholder="https://youtube.com/live/…"></label>
+   <button class="bt grn sm" id="npCreate">Create &amp; start coding</button>
+   <label class="bt gry sm" style="display:inline-flex;align-items:center">…with a video file<input type="file" id="npFile" accept="video/*" hidden></label>
+  </div>
+  <div class="ptools">
+   <button class="bt gry sm" id="pAll">Select all</button><button class="bt gry sm" id="pNone">Clear</button>
+   <span id="pSelInfo" class="muted"></span>
+   <span style="flex:1"></span>
+   <button class="bt grn sm" id="pReview">▶ Review selected</button>
+   <button class="bt gry sm" id="pRefresh">↻ Refresh from cloud</button>
+  </div>
+  <div class="pwrap"><table class="ptable" id="pTable"></table></div>
+ </div>
+</div>
+
+<div class="main" id="main">
+<!-- LEFT: video + timeline + clips -->
+<div>
+ <div class="blk" id="videoBlk">
+  <div class="srcbar code-only">
+   <input id="ytUrl" class="txt" placeholder="Paste a YouTube link (live or recorded)" style="flex:1;min-width:200px">
+   <button class="bt red sm" id="ytLoad">Load YouTube</button>
+   <span class="faint">or</span>
+   <label class="bt gry sm" style="display:inline-flex;align-items:center">Video file<input type="file" id="vidFile" accept="video/*" hidden></label>
+   <button class="bt red sm hidden" id="goLive">● Go live</button>
+  </div>
+  <div class="vwrap" id="vwrap">
+   <video id="vid" controls playsinline preload="metadata"></video>
+   <div id="ytBox" class="hidden"><div id="ytHost"></div></div>
+   <div id="noVid"><div id="noVidMsg">Paste a YouTube link above, drop a practice video here, or</div><label class="bt gold sm" style="display:inline-flex;align-items:center">Choose video file<input type="file" id="vidFile2" accept="video/*" hidden></label><div style="font-size:11px;color:#888">Local files stay on your computer — nothing is uploaded.</div></div>
+  </div>
+  <div class="transport">
+   <button class="bt gry sm" data-skip="-10">−10s</button><button class="bt gry sm" data-skip="-3">−3s</button>
+   <button class="bt blk-bg sm" id="playBtn" style="min-width:64px">Play</button>
+   <button class="bt gry sm" data-skip="3">+3s</button><button class="bt gry sm" data-skip="10">+10s</button>
+   <span style="width:8px"></span>
+   <button class="bt gry sm" data-rate="0.5">0.5×</button><button class="bt gry sm" data-rate="1">1×</button><button class="bt gry sm" data-rate="2">2×</button>
+   <span style="flex:1"></span>
+   <span id="nowPractice" class="muted" style="margin-right:8px"></span>
+   <span class="mono" id="clock" style="font-size:13px">0:00.0 / 0:00.0</span>
+  </div>
+  <div class="tl" id="tl" title="Click to seek. Colored bars are possessions, ticks are coded events."><div id="tlSegs"></div><div id="tlTicks"></div><div id="ph"></div></div>
+ </div>
+
+ <div class="blk">
+  <div class="hd">CLIPS</div>
+  <div class="banner hidden" id="banner"><span id="bannerTxt" style="flex:1"></span><button class="bt grn sm" id="bannerPlay">▶ Play all</button><button class="bt gry sm" id="bannerClear">Clear</button></div>
+  <div class="filters">
+   <label class="f">View<select id="fMode"><option value="poss">Possessions</option><option value="ev">Moments (events)</option></select></label>
+   <label class="f">Team<select id="fTeam"><option value="">All</option><option>GOLD</option><option>BLUE</option></select></label>
+   <label class="f">Player<select id="fPlayer"></select></label>
+   <label class="f">Contains<select id="fTag"></select></label>
+   <label class="f" id="fOutWrap">Outcome<select id="fOut"><option value="">Any</option><option value="score">Scored</option><option value="empty">Empty</option><option value="to">Turnover</option></select></label>
+   <label class="f">Poss lead-in (s)<input type="number" id="padPoss" min="0" max="10" step="0.5" value="1"></label>
+   <label class="f">Event pre (s)<input type="number" id="padPre" min="0" max="30" step="0.5" value="4"></label>
+   <label class="f">Event post (s)<input type="number" id="padPost" min="0" max="30" step="0.5" value="2"></label>
+  </div>
+  <div style="display:flex;gap:6px;align-items:center;padding:6px 8px;border-bottom:1px solid var(--line)">
+   <button class="bt grn sm" id="playAll">▶ Play filtered</button>
+   <button class="bt gry sm" id="prevClip">◀ Prev</button><button class="bt gry sm" id="nextClip">Next ▶</button>
+   <button class="bt gry sm" id="stopClip">Stop</button>
+   <span style="flex:1"></span><span id="clipCount" class="muted"></span>
+  </div>
+  <div class="clips" id="clips"></div>
+ </div>
+</div>
+
+<!-- RIGHT: hotkey key + code window (Code tab) / stat sheet (Review tab) -->
+<div class="right" id="rightCol">
+ <div class="blk" id="keysBlk">
+  <div class="hd" style="cursor:pointer" id="keysHd" title="Show / hide">HOTKEYS<span id="keyLive" title="Green = hotkeys active. Grey = click anywhere on the page outside the video."></span><span id="keysTog" class="faint" style="position:absolute;right:8px;font-size:11px">hide</span></div>
+  <div class="keys" id="keys"></div>
+ </div>
+
+ <div id="codeWin">
+ <div class="blk">
+  <div class="hd">POSSESSION</div>
+  <div class="g" style="grid-template-columns:1fr 1fr">
+   <button class="bt gold pos" id="posG" data-k="g">GOLD POSSESSION <small>G</small></button><button class="bt blue pos" id="posB" data-k="h">BLUE POSSESSION <small>H</small></button>
+  </div>
+  <div class="g" style="grid-template-columns:2fr 1fr">
+   <button class="bt blk-bg" id="posFlip" data-k="p">NEW POSSESSION ⇄ <small>P</small></button><button class="bt gry" id="posEnd" data-k="z">END / DEAD BALL <small>Z</small></button>
+  </div>
+  <div id="nowPoss" class="muted" style="padding:5px 8px;font-size:11px;border-top:1px solid var(--line)">No possession at this point in the video</div>
+  <div class="g" id="players" style="grid-template-columns:repeat(10,minmax(0,1fr))"></div>
+ </div>
+
+ <div class="blk">
+  <div class="hd">SHOT</div>
+  <div class="g" style="grid-template-columns:2fr 1fr 1fr">
+   <button class="bt blk-bg" id="shotBtn" data-k="s" style="height:44px;font-size:14px">SHOT — open chart <small>S</small></button>
+   <button class="bt grn" id="ftM" data-k="+" style="height:44px">+ FT <small>+</small></button><button class="bt red" id="ftX" data-k="x" style="height:44px">- FT <small>X</small></button>
+  </div>
+  <div id="shotPanel" class="hidden" style="padding:10px;border-top:2px solid var(--edge)">
+   <svg id="court" viewBox="0 0 500 470" width="100%" style="display:block;background:#e9c894;border:2px solid #111;cursor:crosshair" role="img" aria-label="Half court shot chart">
+    <rect x="170" y="0" width="160" height="190" fill="#d9b277" stroke="#fff" stroke-width="3"/>
+    <circle cx="250" cy="52.5" r="40" fill="#c4945a" opacity=".85"/>
+    <path d="M210 52.5 A40 40 0 0 0 290 52.5" fill="none" stroke="#fff" stroke-width="2"/>
+    <circle cx="250" cy="190" r="60" fill="none" stroke="#fff" stroke-width="3"/>
+    <path d="M33.5 0 L33.5 99.3 A221.5 221.5 0 0 0 466.5 99.3 L466.5 0" fill="none" stroke="#fff" stroke-width="3"/>
+    <line x1="220" y1="40" x2="280" y2="40" stroke="#fff" stroke-width="3"/>
+    <circle cx="250" cy="52.5" r="7.5" fill="none" stroke="#E9502F" stroke-width="3"/>
+    <path d="M190 470 A60 60 0 0 1 310 470" fill="none" stroke="#fff" stroke-width="3"/>
+    <g id="dots"></g>
+    <circle id="pin" r="9" fill="none" stroke="#111" stroke-width="3" style="display:none"/>
+   </svg>
+   <div class="muted" style="font-size:11px;margin-top:4px">Click the location, then <kbd>0–9</kbd> shooter · <kbd>+</kbd>/<kbd>−</kbd> make/miss · <kbd>Enter</kbd> log · <kbd>Esc</kbd> close. Shot is stamped at <span id="shotAt" class="mono">—</span>.</div>
+   <div id="zoneTag" class="zonetag">Click the court</div>
+   <div class="shotform">
+    <label class="f">Zone override<select id="zone"><option value="">Auto</option><option>RIM</option><option>PAINT</option><option>N PAINT</option><option value="3">3PT</option></select></label>
+    <label class="f" id="t3wrap">3 type<select id="t3"><option value="">Select 3 type</option><option>C&amp;S 3</option><option>OTD 3</option><option>ACTION 3</option><option>TRANS 3</option><option>PAINT 3</option><option>N PAINT 3</option></select></label>
+    <label class="f">Result<select id="res"><option value="">Make or miss</option><option value="+">Make</option><option value="-">Miss</option></select></label>
+    <label class="f">Shooter<select id="shooter"></select></label>
+    <label class="f">Shot grade<select id="grade"><option value="">None</option><option>GOLD SHOT</option><option>SILVER SHOT</option><option>BRONZE SHOT</option></select></label>
+    <label class="f" style="flex-direction:row;align-items:center;gap:6px;margin-top:16px"><input type="checkbox" id="pauseOnShot" checked style="height:auto">Pause video while charting</label>
+   </div>
+   <div id="err" style="font-size:12px;color:var(--bad);min-height:16px;margin-top:6px"></div>
+   <div style="display:flex;gap:6px"><button class="bt grn" id="logShot" style="flex:1;border-radius:4px">Log shot</button><button class="bt gry" id="cancel" style="border-radius:4px">Close</button></div>
+  </div>
+ </div>
+
+ <div class="blk"><div class="hd">OFFENSIVE STATS</div><div class="g" id="off" style="grid-template-columns:repeat(4,minmax(0,1fr))"></div></div>
+ <div class="blk"><div class="hd">DEFENSIVE STATS</div><div class="g" id="def" style="grid-template-columns:repeat(4,minmax(0,1fr))"></div></div>
+
+ <div class="blk"><div class="hd">LINEUPS</div>
+  <div class="g" id="lu" style="grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;padding:6px"></div>
+ </div>
+ </div>
+</div>
+</div>
+
+<div class="blk" style="padding:8px" id="statsBlk">
+ <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap"><b style="font-size:13px" id="statTitle">Stat sheet</b><span class="faint" id="statHint">Click any blue number to watch those possessions</span></div>
+ <div id="statBody">
+ <div class="sec">Team summary</div><div id="team" style="overflow-x:auto"></div>
+ <div class="sec">Player box</div><div id="box" style="overflow-x:auto"></div>
+ <div id="logWrap"><div class="sec">Event log <span class="faint">(click a row to jump there<span class="code-only"> · × to delete</span>)</span></div><div id="log" class="mono log"></div></div>
+ </div>
+</div>
+
+<div class="foot"><span style="color:#E9502F">Status</span> ▸ <span id="status">Create a practice, then mark possessions as you watch</span></div>
+</div>
+
+<dialog id="cloudDlg">
+ <div style="display:flex;align-items:center;margin-bottom:6px"><b style="font-size:14px">Cloud sync (Supabase)</b><span style="flex:1"></span><button class="bt gry sm" id="cClose">Close</button></div>
+ <p class="muted" style="margin:4px 0 10px">Saves every practice to your team's Supabase project: the practice itself (name, date, video link), one row per possession (start / end time) and one row per stat (timestamp, player, possession). Every coach who connects with the same key sees the same list in the Practices tab.</p>
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+  <label class="f">Project URL<input id="cUrl" placeholder="https://xxxx.supabase.co"></label>
+  <label class="f">Anon / publishable key<input id="cKey" placeholder="eyJ… or sb_publishable_…"></label>
+ </div>
+ <div style="display:flex;gap:6px;align-items:center;margin:8px 0">
+  <button class="bt grn sm" id="cConnect">Connect</button><button class="bt gry sm" id="cOff">Disconnect</button>
+  <span id="cMsg" class="muted"></span>
+ </div>
+ <details style="margin-top:10px" open><summary style="cursor:pointer">Setup SQL — run once in Supabase → SQL Editor (safe to re-run)</summary>
+ <pre id="sql">-- One row per practice (full data, used to reopen it in the app)
+create table if not exists public.sessions (
+  id text primary key,
+  name text,
+  source jsonb,                  -- video link: {"type":"yt","id":…} or {"type":"file","name":…}
+  data jsonb not null,
+  updated_at timestamptz not null default now()
+);
+alter table public.sessions add column if not exists practice_date date;
+
+-- One row per possession: start and end time in the video
+create table if not exists public.possessions (
+  session_id text not null references public.sessions(id) on delete cascade,
+  n int not null,                -- possession number in the practice
+  team text not null,            -- GOLD / BLUE
+  team_n int,                    -- that team's possession number
+  start_s double precision not null,
+  end_s double precision,
+  points int not null default 0,
+  video_url text,                -- YouTube link at the possession start (null for local files)
+  primary key (session_id, n)
+);
+
+-- One row per coded stat / shot / free throw, with its timestamp
+create table if not exists public.events (
+  session_id text not null references public.sessions(id) on delete cascade,
+  id int not null,
+  possession_n int,              -- which possession it happened in
+  t double precision not null,   -- seconds into the video
+  kind text not null,            -- stat / shot / ft
+  stat text,                     -- AST, TO, DREB, … ; shot label; FT
+  player text,
+  team text,
+  make boolean,
+  zone text, grade text,
+  x double precision, y double precision,
+  video_url text,                -- YouTube link a few seconds before the moment
+  primary key (session_id, id)
+);
+create index if not exists events_player_stat on public.events (player, stat);
+
+alter table public.sessions enable row level security;
+alter table public.possessions enable row level security;
+alter table public.events enable row level security;
+drop policy if exists "team read/write" on public.sessions;
+drop policy if exists "team read/write" on public.possessions;
+drop policy if exists "team read/write" on public.events;
+create policy "team read/write" on public.sessions for all to anon, authenticated using (true) with check (true);
+create policy "team read/write" on public.possessions for all to anon, authenticated using (true) with check (true);
+create policy "team read/write" on public.events for all to anon, authenticated using (true) with check (true);
+grant select, insert, update, delete on public.sessions, public.possessions, public.events to anon, authenticated;</pre>
+ <button class="bt gry sm" id="cCopy">Copy SQL</button>
+ <div class="faint" style="margin-top:6px">These policies let anyone with your project key read and write — fine for a staff tool, but don't post the key publicly.</div>
+ </details>
+</dialog>
+
+<script>
+const ROSTER=Array.from({length:10},(_,i)=>`Player ${i+1}`);
+// [code, full name, hotkey, side]
+const STATS=[
+ ['AST','Assist','a','off'],['AST OPP','Assist Opportunity','y','off'],['TO','Turnover','t','off'],['OREB','Offensive Rebound','o','off'],
+ ['FD','Foul Drawn','f','off'],['OFF FOUL','Offensive Foul','w','off'],['TRANS','Transition Created','r','off'],
+ ['DREB','Defensive Rebound','d','def'],['STL','Steal','l','def'],['BLK','Block','b','def'],['DFLC','Deflection','e','def'],
+ ['CHRG','Charge Taken','q','def'],['DEF FOUL','Defensive Foul','v','def'],['ACTIVITY','Activity','c','def'],['BS DEF','Ball Screen Defense','k','def'],
+ ['MISS BOX','Missed Boxout','i','def'],['MISS TAG','Missed Tag-Up','u','def'],['DEF MISTAKE','Defensive Mistake','m','def']];
+const STAT_NAME=Object.fromEntries(STATS.map(s=>[s[0],s[1]]));
+const T3=['C&S 3','OTD 3','ACTION 3','TRANS 3','PAINT 3','N PAINT 3'],GRADES=['GOLD SHOT','SILVER SHOT','BRONZE SHOT'];
+const TAG_NAME={...STAT_NAME,Scoring:'Points',REB:'Rebounds',Shot:'Shots (FGA)',Make:'Made shots',Miss:'Missed shots','3PT':'3PT attempts',FT:'Free throws'};
+const $=i=>document.getElementById(i);
+const v=$('vid');
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const st=m=>$('status').textContent=m;
+const fmt=t=>{if(t==null||!isFinite(t))return'–';const m=Math.floor(t/60),s=t-m*60;return `${m}:${s<10?'0':''}${s.toFixed(1)}`};
+const short=p=>p.replace('Player ','P');
+const keyOf=s=>!s?'nofile':s.type==='yt'?'yt:'+s.id:`${s.name}|${s.size}`;
+const TEAMCSS={GOLD:'background:#F7D448;color:#111',BLUE:'background:#0B3F86;color:#fff'};
+const newId=()=>crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2);
+const localDate=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const prettyDate=s=>{if(!s)return'';const d=new Date(s+'T12:00:00');return isNaN(d)?s:d.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'})};
+const LS={get(k){try{return JSON.parse(localStorage.getItem('mockbball:'+k)||'null')}catch(_){return null}},
+ set(k,val){try{localStorage.setItem('mockbball:'+k,JSON.stringify(val))}catch(_){}},del(k){try{localStorage.removeItem('mockbball:'+k)}catch(_){}}};
+
+// ---------- Practices (sessions) ----------
+const defLineup=()=>({GOLD:ROSTER.slice(0,5),BLUE:ROSTER.slice(5)});
+function normalize(d){const ev=Array.isArray(d.events)?d.events:[],created=d.created||new Date().toISOString();
+ return{id:d.id||newId(),name:d.name||'',date:d.date||localDate(new Date(created)),source:d.source||null,created,updated:d.updated||created,
+  events:ev,lineup:d.lineup||defLineup(),nextId:d.nextId||Math.max(0,...ev.map(x=>x.id||0))+1}}
+const freshState=()=>normalize({});
+const practiceLabel=s=>`${s.name||'Untitled practice'}${s.date?' · '+prettyDate(s.date):''}`;
+const ytLink=(s,t)=>s.source&&s.source.type==='yt'?`https://youtu.be/${s.source.id}?t=${Math.max(0,Math.floor(t))}`:null;
+// lib holds every practice this browser knows about (local + cloud). S is the practice being coded.
+const lib=new Map();
+let S=freshState();
+function libPut(s,flags){const cur=lib.get(s.id)||{local:false,cloud:false};lib.set(s.id,{...cur,...flags,s})}
+const getSess=id=>S&&S.id===id?S:lib.get(id)?.s;
+const isEmpty=s=>!s.events.length&&!s.source&&!s.name;
+function persist(s){if(isEmpty(s))return;s.updated=new Date().toISOString();LS.set('s:'+s.id,s);libPut(s,{local:true});queueCloud(s)}
+function save(){persist(S);LS.set('current',S.id)}
+function loadLocalLib(){
+ const RESERVED=['current','cloud','theme','mode','tab','keysHidden'],keys=[];
+ try{for(let i=0;i<localStorage.length;i++)keys.push(localStorage.key(i))}catch(_){}
+ keys.filter(k=>k&&k.startsWith('mockbball:')).forEach(k=>{const rest=k.slice(10);if(RESERVED.includes(rest))return;
+  const d=LS.get(rest);if(!d||!Array.isArray(d.events))return;
+  if(rest.startsWith('s:')){libPut(normalize(d),{local:true});return}
+  // Older versions stored one practice per video key — move it to the practice list.
+  LS.del(rest);if(!d.events.length)return;
+  const s=normalize(d);let m;
+  if(!s.source&&rest!=='nofile')s.source=rest.startsWith('yt:')?{type:'yt',id:rest.slice(3)}:(m=rest.match(/^(.*)\|(\d+)$/))?{type:'file',name:m[1],size:+m[2]}:null;
+  LS.set('s:'+s.id,s);libPut(s,{local:true})})}
+
+let player=null,pin=null,shotT=null,tab='code',reviewSet=null;
+const selected=new Set();
+let queue=null,qi=0;
+const teamOf=p=>S.lineup.GOLD.includes(p)?'GOLD':S.lineup.BLUE.includes(p)?'BLUE':'?';
+
+// ---------- Theme ----------
+function setTheme(t){document.documentElement.dataset.theme=t;$('themeBtn').textContent=t==='dark'?'☀ Light':'☾ Dark';LS.set('theme',t)}
+$('themeBtn').onclick=()=>setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');
+setTheme(document.documentElement.dataset.theme||'dark');
+
+// ---------- Video sources: local file (<video>) or YouTube embed, behind one interface ----------
+let yt=null,ytReady=false,ytPending=null,loadedKey=null,guardUntil=0,vidURL=null;
+const fileURLs={}; // video files loaded this visit, by key — lets review hop between local-file practices
+const FILE_SRC={kind:'file',time:()=>v.currentTime||0,seek:t=>{v.currentTime=t},play:()=>v.play().catch(()=>{}),pause:()=>v.pause(),paused:()=>v.paused,
+ duration:()=>isFinite(v.duration)?v.duration:0,rate:r=>{v.playbackRate=r},ready:()=>!!vidURL};
+const YT_SRC={kind:'yt',time:()=>ytReady?yt.getCurrentTime()||0:0,seek:t=>ytReady&&yt.seekTo(t,true),play:()=>ytReady&&yt.playVideo(),pause:()=>ytReady&&yt.pauseVideo(),
+ paused:()=>!ytReady||![1,3].includes(yt.getPlayerState()),duration:()=>ytReady?yt.getDuration()||0:0,rate:r=>ytReady&&yt.setPlaybackRate(r),ready:()=>ytReady};
+let src=FILE_SRC;
+const now=()=>src.time();
+const dur=()=>src.ready()?Math.max(src.duration(),now()):0;
+const isLoaded=s=>!!s&&!!s.source&&keyOf(s.source)===loadedKey;
+function showYT(){v.pause();src=YT_SRC;v.classList.add('hidden');$('ytBox').classList.remove('hidden');$('noVid').classList.add('hidden');$('goLive').classList.remove('hidden')}
+function showFile(){src=FILE_SRC;$('ytBox').classList.add('hidden');v.classList.remove('hidden');$('goLive').classList.add('hidden');if(ytReady)yt.pauseVideo()}
+function showNoVideo(msg){showFile();v.removeAttribute('src');v.load();vidURL=null;loadedKey=null;$('noVid').classList.remove('hidden');$('noVidMsg').textContent=msg;render()}
+let ytApi=null;
+function ensureYTApi(){return ytApi||(ytApi=new Promise(res=>{if(window.YT&&YT.Player)return res();window.onYouTubeIframeAPIReady=res;
+ const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';document.head.appendChild(s)}))}
+async function loadYTVideo(id,start,autoplay){start=start||0;
+ if(location.protocol==='file:')st('Heads up: YouTube blocks embeds on pages opened as a file. Serve this folder (see README: python3 -m http.server) if the player shows an error.');
+ showYT();loadedKey='yt:'+id;guardUntil=performance.now()+1500;render();
+ await ensureYTApi();
+ if(yt&&ytReady){autoplay?yt.loadVideoById({videoId:id,startSeconds:start}):yt.cueVideoById({videoId:id,startSeconds:start})}
+ else if(yt)ytPending={id,start,autoplay};
+ else yt=new YT.Player('ytHost',{videoId:id,playerVars:{playsinline:1,rel:0,start:Math.floor(start),autoplay:autoplay?1:0,origin:location.origin},
+  events:{onReady:()=>{ytReady=true;if(ytPending){const p=ytPending;ytPending=null;loadYTVideo(p.id,p.start,p.autoplay)}ytTitle();render()},onStateChange:ytTitle,
+   onError:e=>st(`YouTube error ${e.data}${e.data===150||e.data===101?' — this video does not allow embedding':e.data===153?' — serve the page over http (see README)':''}`)}})}
+function playFileURL(key,url,start,autoplay){showFile();$('noVid').classList.add('hidden');loadedKey=key;guardUntil=performance.now()+800;
+ const go=()=>{if(start!=null)v.currentTime=start;if(autoplay)v.play().catch(()=>{})};
+ if(vidURL!==url){vidURL=url;v.src=url;v.addEventListener('loadedmetadata',go,{once:true})}else go();render()}
+// Show a practice's video, optionally at a time. Returns false if it can't (a local file that hasn't been loaded this visit).
+function openSessionVideo(s,start=null,autoplay=false){const so=s&&s.source,k=keyOf(so);
+ if(!so){showNoVideo('Paste a YouTube link above, drop a practice video here, or');return false}
+ if(k===loadedKey){guardUntil=performance.now()+400;if(start!=null)src.seek(start);if(autoplay)src.play();return true}
+ if(so.type==='yt'){$('ytUrl').value=`https://youtu.be/${so.id}`;loadYTVideo(so.id,start,autoplay);return true}
+ if(fileURLs[k]){playFileURL(k,fileURLs[k],start,autoplay);return true}
+ showNoVideo(`“${s.name||'This practice'}” was coded on ${so.name}. Load that file to watch it, or`);return false}
+
+// Picks which practice a video loaded in the Code tab belongs to.
+function attachSession(source){const key=keyOf(source);let note='';
+ if(!(S.source&&keyOf(S.source)===key)){
+  const found=[...lib.values()].map(x=>x.s).filter(s=>s.source&&keyOf(s.source)===key&&s.id!==S.id).sort((a,b)=>b.updated.localeCompare(a.updated))[0];
+  if(!S.source&&!isEmpty(S)){}                       // a new practice without a video yet: this is its video
+  else if(found){S=found;note=` — reopened “${practiceLabel(S)}” (${S.events.length} events)`}
+  else if(S.source)S=freshState();
+ }
+ S.source=source;player=null;save();drawAll();return note}
+function useFile(file){if(!file)return;const key=`${file.name}|${file.size}`;if(!fileURLs[key])fileURLs[key]=URL.createObjectURL(file);
+ if(tab==='code'){const note=attachSession({type:'file',name:file.name,size:file.size});if(!S.name)S.name=file.name.replace(/\.[^.]+$/,'');save();playFileURL(key,fileURLs[key],null,false);st(`Loaded ${file.name}${note}`)}
+ else{playFileURL(key,fileURLs[key],0,false);const m=viewSessions().find(s=>keyOf(s.source)===key);st(m?`Loaded ${file.name} for ${practiceLabel(m)}`:`Loaded ${file.name} — it doesn't match a practice being reviewed`)}}
+function useYouTube(id){const note=attachSession({type:'yt',id});loadYTVideo(id,0,false);st(`Loaded YouTube ${id}${note}`)}
+$('vidFile').onchange=e=>{useFile(e.target.files[0]);e.target.value=''};$('vidFile2').onchange=e=>{useFile(e.target.files[0]);e.target.value=''};
+const vw=$('vwrap');
+vw.addEventListener('dragover',e=>{e.preventDefault();vw.classList.add('drag')});
+vw.addEventListener('dragleave',()=>vw.classList.remove('drag'));
+vw.addEventListener('drop',e=>{e.preventDefault();vw.classList.remove('drag');const f=[...e.dataTransfer.files].find(f=>f.type.startsWith('video/'))||e.dataTransfer.files[0];useFile(f)});
+v.addEventListener('loadedmetadata',render);
+function ytIdFrom(s){s=(s||'').trim();if(/^[\w-]{11}$/.test(s))return s;
+ try{const u=new URL(s);if(u.hostname.endsWith('youtu.be'))return u.pathname.slice(1,12);if(u.searchParams.get('v'))return u.searchParams.get('v');
+  const m=u.pathname.match(/\/(live|embed|shorts|v)\/([\w-]{11})/);if(m)return m[2]}catch(_){}return null}
+function ytTitle(){if(S.name||!ytReady||!isLoaded(S))return;const t=yt.getVideoData&&yt.getVideoData().title;if(t){S.name=t;save();renderName()}}
+$('ytLoad').onclick=()=>{const id=ytIdFrom($('ytUrl').value);if(!id){st('That doesn\'t look like a YouTube link');return}$('ytUrl').blur();useYouTube(id)};
+$('ytUrl').addEventListener('keydown',e=>{if(e.key==='Enter')$('ytLoad').click()});
+$('goLive').onclick=()=>{stopQueue();src.seek(src.duration());src.play()};
+
+function add(e){e.id=S.nextId++;if(e.t==null)e.t=now();S.events.push(e);save();render();return e}
+
+// ---------- Possessions: derived from time-ordered poss/end markers ----------
+// A possession runs from its marker until the next poss/end marker (or end of video, if that video is loaded).
+function possessions(s){
+ const m=s.events.filter(e=>e.k==='poss'||e.k==='end').sort((a,b)=>a.t-b.t||a.id-b.id),out=[],cnt={GOLD:0,BLUE:0},D=isLoaded(s)?dur():0;
+ m.forEach((e,i)=>{if(e.k!=='poss')return;const nx=m[i+1];
+  out.push({id:e.id,n:out.length+1,tn:++cnt[e.team],team:e.team,start:e.t,end:nx?nx.t:(D>e.t?D:null)})});
+ return out}
+const inPoss=(P,t)=>t>=P.start&&(P.end==null||t<P.end);
+const possAt=(s,t)=>possessions(s).find(P=>inPoss(P,t));
+const codedEvents=s=>s.events.filter(e=>e.k==='stat'||e.k==='shot'||e.k==='ft');
+const pts=e=>e.k==='shot'&&e.make?(e.zone==='3'?3:2):e.k==='ft'&&e.make?1:0;
+const possEvents=(s,P)=>codedEvents(s).filter(e=>inPoss(P,e.t)).sort((a,b)=>a.t-b.t);
+const possPts=(P,E)=>E.filter(e=>e.team===P.team).reduce((a,e)=>a+pts(e),0);
+function eventTags(e){
+ if(e.k==='stat')return[e.stat,...(e.stat==='OREB'||e.stat==='DREB'?['REB']:[])];
+ if(e.k==='ft')return['FT',e.make?'FT make':'FT miss',...(e.make?['Scoring']:[])];
+ if(e.k==='shot')return['Shot',e.make?'Make':'Miss',e.zone==='3'?'3PT':e.zone,...(e.zone==='3'?[e.label]:[]),...(e.grade?[e.grade]:[]),...(e.make?['Scoring']:[])];
+ return[]}
+const evLabel=e=>e.k==='stat'?e.stat:e.k==='ft'?`${e.make?'+':'-'} FT`:e.k==='shot'?`${e.make?'+':'-'} ${e.label}`:e.k==='poss'?`${e.team} POSSESSION`:e.k==='end'?'END / DEAD BALL':e.k==='sub'?`SUB ${e.p} in for ${e.out}`:'';
+// Which practices the stat sheet and clip list are showing right now.
+const byDate=(a,b)=>(a.date||'').localeCompare(b.date||'')||a.created.localeCompare(b.created);
+function viewSessions(){
+ if(tab==='practices')return[...selected].map(getSess).filter(Boolean).sort(byDate);
+ if(tab==='review')return(reviewSet||[S]).map(s=>getSess(s.id)||s).sort(byDate);
+ return[S]}
+
+// ---------- Possession buttons ----------
+function startPoss(t){if(!src.ready())st('No video loaded — events are stamped at 0:00');add({k:'poss',team:t});st(`${t} POSSESSION started at ${fmt(now())}`)}
+function flipPoss(){const t=now(),P=possAt(S,t-0.01)||[...possessions(S)].reverse().find(P=>P.start<=t);startPoss(P&&P.team==='GOLD'?'BLUE':'GOLD')}
+function endPoss(){const P=possAt(S,now());if(!P){st('No possession running here to end');return}add({k:'end'});st(`Ended ${P.team} possession #${P.tn} at ${fmt(now())}`)}
+$('posG').onclick=()=>startPoss('GOLD');$('posB').onclick=()=>startPoss('BLUE');$('posFlip').onclick=flipPoss;$('posEnd').onclick=endPoss;
+
+// ---------- Players / stats ----------
+const digitPlayer=d=>ROSTER[(+d+9)%10]; // 1→Player 1 … 9→Player 9, 0→Player 10
+const playerKey=p=>String((ROSTER.indexOf(p)+1)%10);
+function mk(p,cls,html,fn){const b=document.createElement('button');b.className='bt '+cls;b.innerHTML=html;b.onclick=fn;p.appendChild(b);return b}
+function pickPlayer(p){player=p;drawPlayers();st(`Active player: ${p} (${teamOf(p)})`)}
+function drawPlayers(){$('players').innerHTML='';['GOLD','BLUE'].forEach(t=>S.lineup[t].forEach(p=>{const b=mk($('players'),t==='GOLD'?'gold':'blue',`${esc(short(p))}<small>${playerKey(p)}</small>`,()=>pickPlayer(p));b.style.height='44px';b.title=`${p} — key ${playerKey(p)}`;b.dataset.k='n'+playerKey(p);if(p===player)b.classList.add('sel')}))}
+function drawLineups(){$('lu').innerHTML='';['GOLD','BLUE'].forEach(t=>S.lineup[t].forEach((p,i)=>{const s=document.createElement('select');s.style.cssText=`height:32px;font-size:12px;border:1px solid #333;border-radius:0;${TEAMCSS[t]}`;s.innerHTML=ROSTER.map(r=>`<option ${r===p?'selected':''}>${esc(r)}</option>`).join('');
+ s.onchange=()=>{const nw=s.value,old=S.lineup[t][i];['GOLD','BLUE'].forEach(tt=>{const j=S.lineup[tt].indexOf(nw);if(j>-1)S.lineup[tt][j]=old});S.lineup[t][i]=nw;add({k:'sub',p:nw,out:old,team:t});st(`Sub: ${nw} in for ${old} (${t})`);drawLineups();drawPlayers();fillShooter();s.blur()};$('lu').appendChild(s)}))}
+function stat(s){if(!player){st('Pick a player first (0–9)');return}add({k:'stat',stat:s,p:player,team:teamOf(player)});st(`${STAT_NAME[s]||s} → ${player} @ ${fmt(now())}`)}
+STATS.forEach(([code,name,k,side])=>{const b=mk($(side),'gry',`${esc(code)}<small>${k.toUpperCase()}</small>`,()=>stat(code));b.title=`${name} — key ${k.toUpperCase()}`;b.dataset.k=k});
+function ft(m){if(!player){st('Pick a player first (0–9)');return}add({k:'ft',make:m,p:player,team:teamOf(player)});st(`${m?'+':'-'} FT → ${player} @ ${fmt(now())}`)}
+$('ftM').onclick=()=>ft(true);$('ftX').onclick=()=>ft(false);
+
+// ---------- Shot chart ----------
+function fillShooter(){const P=possAt(S,shotT??now()),t=P?P.team:'GOLD';$('shooter').innerHTML=[...S.lineup[t],...S.lineup[t==='GOLD'?'BLUE':'GOLD']].map(p=>`<option ${p===player?'selected':''}>${esc(p)}</option>`).join('')}
+// Court is 500x470 SVG units = 50x47 ft (10 units per ft). Hoop at (25, 5.25) ft. NCAA arc 22'1.75", corners 21'7.875".
+function classify(x,y){const fx=x/10,fy=y/10,dx=fx-25,dy=fy-5.25,d=Math.hypot(dx,dy);
+ const three=fy<9.93?Math.abs(dx)>=21.65:d>=22.15;if(three)return{zone:'3',d};
+ if(d<=4)return{zone:'RIM',d};
+ if(fx>=17&&fx<=33&&fy<=19)return{zone:'PAINT',d};return{zone:'N PAINT',d}}
+function curZone(){return $('zone').value||(pin&&pin.zone)||''}
+function updZone(){const z=curZone();$('zoneTag').textContent=z?(z==='3'?'3PT':z)+(pin?`  ·  ${pin.d.toFixed(1)} ft`:''):'Click the court';$('t3wrap').style.opacity=z==='3'?1:.4;$('t3').disabled=z!=='3';$('err').textContent=''}
+$('court').addEventListener('click',e=>{const r=$('court').getBoundingClientRect();const x=(e.clientX-r.left)/r.width*500,y=(e.clientY-r.top)/r.height*470;pin={x,y,...classify(x,y)};const c=$('pin');c.setAttribute('cx',x);c.setAttribute('cy',y);c.style.display='';$('zone').value='';updZone()});
+['zone','t3','res','shooter','grade'].forEach(i=>$(i).addEventListener('change',()=>{$('err').textContent='';if(i==='zone')updZone();$(i).blur()}));
+const shotOpen=()=>!$('shotPanel').classList.contains('hidden');
+function closeShot(){$('shotPanel').classList.add('hidden');shotT=null}
+function openShot(){shotT=now();if($('pauseOnShot').checked)src.pause();$('shotPanel').classList.remove('hidden');fillShooter();pin=null;$('pin').style.display='none';['zone','t3','res','grade'].forEach(i=>$(i).value='');updZone();$('shotAt').textContent=fmt(shotT);st('Shot chart open — click the shot location')}
+function toggleShot(){shotOpen()?(closeShot(),st('Shot cancelled')):openShot()}
+$('shotBtn').onclick=toggleShot;
+$('cancel').onclick=()=>{closeShot();st('Shot cancelled')};
+function logShot(){const z=curZone();
+ if(!pin&&!$('zone').value){$('err').textContent='Click the shot location first';return}
+ if(z==='3'&&!$('t3').value){$('err').textContent='Pick the 3 type';return}
+ if(!$('res').value){$('err').textContent='Pick make or miss (+ / −)';return}
+ const make=$('res').value==='+',p=$('shooter').value,label=z==='3'?$('t3').value:z,g=$('grade').value;
+ add({k:'shot',t:shotT,p,team:teamOf(p),zone:z,label,make,grade:g,x:pin?pin.x:null,y:pin?pin.y:null});
+ player=p;drawPlayers();closeShot();st(`Shot ▸ ${make?'+':'-'} ${label} → ${p}${g?' · '+g:''}`)}
+$('logShot').onclick=logShot;
+
+// ---------- Transport ----------
+function togglePlay(){src.paused()?src.play():src.pause()}
+function skip(d){stopQueue();src.seek(Math.max(0,Math.min(dur()||0,now()+d)))}
+$('playBtn').onclick=togglePlay;
+document.querySelectorAll('[data-skip]').forEach(b=>b.onclick=()=>skip(+b.dataset.skip));
+document.querySelectorAll('[data-rate]').forEach(b=>b.onclick=()=>{src.rate(+b.dataset.rate);st(`Playback ${b.dataset.rate}×`)});
+$('tl').addEventListener('click',e=>{const D=dur();if(!D)return;const r=$('tl').getBoundingClientRect();stopQueue();src.seek((e.clientX-r.left)/r.width*D)});
+function jumpTo(s,t){stopQueue();if(openSessionVideo(s,Math.max(0,t),true))st(`Jumped to ${fmt(t)}${s!==S||tab!=='code'?' in '+practiceLabel(s):''}`)}
+
+// ---------- Clips + playlist (across every practice in view) ----------
+const num=(id,d)=>{const x=parseFloat($(id).value);return isFinite(x)&&x>=0?x:d};
+function filters(){return{mode:$('fMode').value,team:$('fTeam').value,pl:$('fPlayer').value,tag:$('fTag').value,out:$('fOut').value}}
+// An event matches when it is by the filtered player AND carries the filtered tag (same event, not just same possession).
+const evMatch=(e,F)=>(!F.pl||e.p===F.pl)&&(!F.tag||eventTags(e).includes(F.tag));
+function clipList(){
+ const F=filters(),lead=num('padPoss',1),pre=num('padPre',4),post=num('padPost',2);
+ return viewSessions().flatMap(s=>{
+  if(F.mode==='poss')return possessions(s).map(P=>{const E=possEvents(s,P);
+    return{key:s.id+':p'+P.id,s,P,E,pt:possPts(P,E),team:P.team,start:Math.max(0,P.start-lead),end:P.end??Math.max(P.start+30,(E.at(-1)?.t??0)+5),t:P.start}})
+   .filter(c=>(!F.team||c.team===F.team)&&(!(F.pl||F.tag)||c.E.some(e=>evMatch(e,F)))
+    &&(!F.out||(F.out==='score'?c.pt>0:F.out==='empty'?c.pt===0:c.E.some(e=>e.stat==='TO'))));
+  return codedEvents(s).sort((a,b)=>a.t-b.t).filter(e=>(!F.team||e.team===F.team)&&evMatch(e,F))
+   .map(e=>({key:s.id+':e'+e.id,s,e,team:e.team,start:Math.max(0,e.t-pre),end:e.t+post,t:e.t}))})}
+function chip(s,e,F){const cls=(e.k==='shot'||e.k==='ft')?(e.make?'mk':'ms'):'',hl=F&&(F.pl||F.tag)&&evMatch(e,F)?' match':'';
+ return `<span class="chip ${cls}${hl}" data-sid="${esc(s.id)}" data-seek="${e.t}" title="Jump to ${fmt(e.t)}">${esc(evLabel(e))} ${esc(short(e.p))}</span>`}
+function filterSummary(F){const parts=[];if(F.pl)parts.push(F.pl);if(F.team)parts.push(F.team);if(F.tag)parts.push(TAG_NAME[F.tag]||F.tag);
+ if(F.out)parts.push({score:'scored',empty:'empty',to:'turnover'}[F.out]);return parts.join(' · ')}
+function renderClips(){
+ const F=filters(),L=clipList(),playing=queue&&queue[qi]&&queue[qi].key,poss=F.mode==='poss',multi=viewSessions().length>1,canDel=tab==='code';
+ $('fOutWrap').style.opacity=poss?1:.4;$('fOut').disabled=!poss;
+ const unit=poss?'possession':'moment',np=new Set(L.map(c=>c.s.id)).size;
+ $('clipCount').textContent=`${L.length} ${unit}${L.length===1?'':'s'}`+(multi?` from ${np} practice${np===1?'':'s'}`:'')+(L.length?` · ${fmt(L.reduce((a,c)=>a+c.end-c.start,0))} total`:'');
+ const sum=filterSummary(F);
+ $('banner').classList.toggle('hidden',!sum);
+ $('bannerTxt').innerHTML=sum?`Watching <b>${esc(sum)}</b> — ${L.length} ${unit}${L.length===1?'':'s'}${multi?` across ${np} practice${np===1?'':'s'}`:''}. <span class="faint">Click a highlighted tag to jump straight to that moment.</span>`:'';
+ let lastSid=null;
+ $('clips').innerHTML=L.length?L.map((c,i)=>{
+  const head=multi&&c.s.id!==lastSid?`<div class="pgroup">${esc(practiceLabel(c.s))}${c.s.source?'':' — no video linked'}</div>`:'';lastSid=c.s.id;
+  const tm=`<span><span class="tm" style="${TEAMCSS[c.team]||''}"></span> ${c.team?c.team[0]:''}</span>`;
+  const body=poss?`<span><b>${c.pt} pts</b> ${c.E.map(e=>chip(c.s,e,F)).join('')||'<span class="faint">no events</span>'}</span>`:`<span>${chip(c.s,c.e,F)}${c.e.grade?`<span class="chip">${esc(c.e.grade)}</span>`:''}</span>`;
+  const id=poss?`#${c.P.n}`:`${i+1}`,delBtn=canDel?`<button class="x" data-del="${poss?c.P.id:c.e.id}" title="${poss?'Delete possession marker':'Delete event'}">×</button>`:'<span></span>';
+  return `${head}<div class="clip${c.key===playing?' playing':''}" data-i="${i}"><span class="mono">${id}</span>${tm}<span class="mono">${fmt(c.start)}–${fmt(c.end)}</span><span class="mono dur faint">${(c.end-c.start).toFixed(1)}s</span>${body}${delBtn}</div>`}).join('')
+ :`<div class="faint" style="padding:12px">${viewSessions().some(s=>s.events.length)?'No clips match these filters.':tab==='code'?'Press P (or GOLD / BLUE POSSESSION) while the video plays — each press starts a new clip and ends the previous one.':'No coded possessions in these practices yet.'}</div>`;
+ markActiveCell()}
+$('clips').addEventListener('click',e=>{const d=e.target.closest('[data-del]');if(d){del(+d.dataset.del);return}
+ const sk=e.target.closest('[data-seek]');if(sk){jumpTo(getSess(sk.dataset.sid),+sk.dataset.seek-num('padPre',4));return}
+ const row=e.target.closest('.clip');if(row)playQueue(clipList(),+row.dataset.i,true)});
+function cueClip(c){if(openSessionVideo(c.s,c.start,true)){$('nowPractice').textContent=viewSessions().length>1?practiceLabel(c.s):'';return true}
+ queue=null;st(`Can't play clips from ${practiceLabel(c.s)} — load its video file (${c.s.source?c.s.source.name:'no video linked'})`);renderClips();return false}
+function playQueue(L,i,single){if(!L.length){st('No clips to play');return}
+ queue=single?[L[i]]:L;qi=single?0:i;if(cueClip(queue[qi])){st(`Playing ${qi+1}/${queue.length}`);renderClips()}}
+function stopQueue(){if(queue){queue=null;renderClips()}}
+$('playAll').onclick=$('bannerPlay').onclick=()=>playQueue(clipList(),0,false);
+$('stopClip').onclick=()=>{stopQueue();src.pause();st('Stopped')};
+function stepClip(d){const L=clipList();if(!L.length)return;
+ if(queue&&queue.length>1){qi=Math.max(0,Math.min(queue.length-1,qi+d));cueClip(queue[qi]);renderClips();return}
+ const t=now(),here=L.map((c,i)=>({c,i})).filter(x=>isLoaded(x.c.s));
+ const hit=d>0?here.find(x=>x.c.start>t+0.05):here.filter(x=>x.c.start<t-1.5).at(-1);
+ if(!hit){st(d>0?'No later clip':'No earlier clip');return}playQueue(L,hit.i,true)}
+$('prevClip').onclick=()=>stepClip(-1);$('nextClip').onclick=()=>stepClip(1);
+['fMode','fTeam','fPlayer','fTag','fOut','padPoss','padPre','padPost'].forEach(i=>$(i).addEventListener('change',()=>{stopQueue();renderClips();if($(i).tagName==='SELECT')$(i).blur()}));
+function setFilters(F){$('fMode').value=F.mode||'poss';$('fTeam').value=F.team||'';$('fPlayer').value=F.pl||'';$('fTag').value=F.tag||'';$('fOut').value=F.out||''}
+$('bannerClear').onclick=()=>{stopQueue();setFilters({mode:$('fMode').value});renderClips()};
+function fillFilters(){
+ const keep=(id,html)=>{const s=$(id),o=s.value;s.innerHTML=html;if([...s.options].some(x=>x.value===o))s.value=o};
+ keep('fPlayer','<option value="">All</option>'+ROSTER.map(p=>`<option>${esc(p)}</option>`).join(''));
+ const opt=a=>a.map(x=>`<option value="${esc(x[0])}">${esc(x[1])}</option>`).join('');
+ keep('fTag','<option value="">Anything</option>'+
+  `<optgroup label="Totals">${opt([['Scoring','Points (made shots + FTs)'],['REB','Rebounds']])}</optgroup>`+
+  `<optgroup label="Offense">${opt(STATS.filter(s=>s[3]==='off'))}</optgroup><optgroup label="Defense">${opt(STATS.filter(s=>s[3]==='def'))}</optgroup>`+
+  [['Shots',['Shot','Make','Miss','RIM','PAINT','N PAINT','3PT']],['3 types',T3],['Grades',GRADES],['Free throws',['FT','FT make','FT miss']]]
+  .map(([g,a])=>`<optgroup label="${g}">${opt(a.map(x=>[x,TAG_NAME[x]||x]))}</optgroup>`).join(''))}
+
+// ---------- Stat sheet: every number is a link to its possessions ----------
+const cellKey=F=>[F.pl||'',F.team||'',F.tag||'',F.out||''].join('|');
+function cell(n,F,txt){const shown=txt??n;if(!n)return `<td>${n===0&&txt==null?'':shown}</td>`;
+ return `<td class="cl" data-f="${esc(JSON.stringify(F))}" data-key="${esc(cellKey(F))}" title="Watch these possessions">${shown}</td>`}
+function markActiveCell(){const k=cellKey(filters());document.querySelectorAll('td.cl').forEach(td=>td.classList.toggle('on',tab!=='practices'&&td.dataset.key===k))}
+$('statsBlk').addEventListener('click',e=>{
+ const lg=e.target.closest('#log [data-del]');if(lg){del(+lg.dataset.del);return}
+ const row=e.target.closest('#log [data-t]');if(row){const s=viewSessions()[0];jumpTo(s,+row.dataset.t-num('padPre',4));return}
+ const td=e.target.closest('td.cl');if(!td)return;
+ if(tab==='practices'){reviewSet=viewSessions();setTab('review')}
+ setFilters({mode:'poss',...JSON.parse(td.dataset.f)});renderClips();
+ const L=clipList();if(!L.length)return;
+ playQueue(L,0,false);$('videoBlk').scrollIntoView({behavior:'smooth',block:'start'})});
+
+// ---------- Tabs ----------
+function setTab(t){tab=t;document.body.dataset.tab=t;
+ ['Practices','Code','Review'].forEach(n=>$('tab'+n).classList.toggle('on',t===n.toLowerCase()));
+ if(t!=='code'&&shotOpen())closeShot();
+ if(t==='practices'){$('practicesView').appendChild($('statsBlk'));stopQueue();src.pause();renderPractices()}
+ else if(t==='review'){$('rightCol').appendChild($('statsBlk'));if(!reviewSet)reviewSet=[S];const VS=viewSessions();if(!VS.some(isLoaded)&&VS[0])openSessionVideo(VS[0],null,false)}
+ else{$('main').after($('statsBlk'));reviewSet=null;stopQueue();if(!isLoaded(S))openSessionVideo(S,null,false);drawAll()}
+ LS.set('tab',t);render()}
+$('tabPractices').onclick=()=>setTab('practices');$('tabCode').onclick=()=>setTab('code');$('tabReview').onclick=()=>{if(tab!=='review'&&tab!=='practices')reviewSet=null;else if(tab==='practices'&&selected.size)reviewSet=viewSessions();setTab('review')};
+function openForCoding(s){if(S.id!==s.id){save();S=s;player=null}LS.set('current',S.id);setTab('code');st(`Coding ${practiceLabel(S)}`)}
+
+// ---------- Practices tab ----------
+function practiceRows(){return[...lib.values()].map(x=>({...x,s:getSess(x.s.id)})).sort((a,b)=>byDate(b.s,a.s))}
+function renderPractices(){
+ const rows=practiceRows(),n=selected.size;
+ $('pSelInfo').textContent=rows.length?`${n} of ${rows.length} selected${n?' — combined stats below':''}`:'';
+ $('pReview').disabled=!n;$('pReview').textContent=n>1?`▶ Review ${n} practices`:'▶ Review selected';
+ $('pTable').innerHTML=rows.length?`<tr><th style="width:28px"><input type="checkbox" id="pAllBox" ${n&&n===rows.length?'checked':''}></th><th style="width:140px">Date</th><th>Practice</th><th style="min-width:260px">Video link</th><th>Poss</th><th>Stats</th><th>Gold–Blue</th><th>Saved</th><th></th></tr>`+
+  rows.map(({s,local,cloud})=>{const PS=possessions(s),E=codedEvents(s),g=E.filter(e=>e.team==='GOLD').reduce((a,e)=>a+pts(e),0),b=E.filter(e=>e.team==='BLUE').reduce((a,e)=>a+pts(e),0);
+   const so=s.source,link=so&&so.type==='yt'?`https://youtu.be/${so.id}`:'',ph=so&&so.type==='file'?`📁 ${so.name} — paste a YouTube link to switch`:'Paste YouTube link';
+   return `<tr data-id="${esc(s.id)}" class="${selected.has(s.id)?'on':''}"><td><input type="checkbox" data-sel ${selected.has(s.id)?'checked':''}></td>
+    <td><input type="date" class="txt" data-field="date" value="${esc(s.date)}"></td>
+    <td><input class="txt" data-field="name" value="${esc(s.name)}" placeholder="Untitled practice">${s.id===S.id?'<div class="faint" style="font-size:10px;margin-top:2px">open in Code</div>':''}</td>
+    <td><div style="display:flex;gap:4px;align-items:center"><input class="txt" data-field="link" value="${esc(link)}" placeholder="${esc(ph)}">${link?`<a href="${esc(link)}" target="_blank" rel="noopener" title="Open on YouTube">↗</a>`:''}</div></td>
+    <td class="n">${PS.length}</td><td class="n">${E.length}</td><td class="n">${g}–${b}</td>
+    <td class="n">${local?'<span class="badge">this browser</span>':''}${cloud?'<span class="badge">cloud</span>':''}</td>
+    <td class="n"><button class="bt gry sm" data-act="code">Code</button> <button class="bt gry sm" data-act="review">Review</button> <button class="x" data-act="del" title="Delete practice">×</button></td></tr>`}).join('')
+  :`<tr><td class="faint" style="padding:16px">No practices yet. Create one above — paste the YouTube link for the practice stream (or pick a video file) and start coding.</td></tr>`;
+ const all=$('pAllBox');if(all)all.indeterminate=n>0&&n<rows.length;
+ render()}
+$('pTable').addEventListener('change',e=>{
+ if(e.target.id==='pAllBox'){if(e.target.checked)practiceRows().forEach(r=>selected.add(r.s.id));else selected.clear();renderPractices();return}
+ const tr=e.target.closest('tr[data-id]');if(!tr)return;const s=getSess(tr.dataset.id);if(!s)return;
+ if(e.target.matches('[data-sel]')){e.target.checked?selected.add(s.id):selected.delete(s.id);renderPractices();return}
+ const f=e.target.dataset.field,val=e.target.value.trim();
+ if(f==='name'||f==='date'){s[f]=val;persist(s);if(s===S)renderName();renderPractices()}
+ if(f==='link'){if(!val)return;const id=ytIdFrom(val);if(!id){st('That doesn\'t look like a YouTube link');e.target.value='';return}
+  s.source={type:'yt',id};persist(s);st(`Linked ${practiceLabel(s)} to YouTube ${id}`);renderPractices()}});
+$('pTable').addEventListener('click',async e=>{const b=e.target.closest('[data-act]');if(!b)return;const s=getSess(b.closest('tr').dataset.id);if(!s)return;
+ if(b.dataset.act==='code')openForCoding(s);
+ if(b.dataset.act==='review'){reviewSet=[s];setTab('review')}
+ if(b.dataset.act==='del'){if(!confirm(`Delete “${practiceLabel(s)}” and all its coding${cloud?' (from the cloud too)':''}?`))return;
+  LS.del('s:'+s.id);lib.delete(s.id);selected.delete(s.id);clearTimeout(cloudTimers[s.id]);delete cloudTimers[s.id];
+  if(s.id===S.id){S=freshState();LS.del('current')}
+  if(cloud)try{await cloudFetch(`sessions?id=eq.${encodeURIComponent(s.id)}`,{method:'DELETE'})}catch(err){st('Cloud delete failed — '+err.message)}
+  renderPractices();st(`Deleted ${practiceLabel(s)}`)}});
+$('pAll').onclick=()=>{practiceRows().forEach(r=>selected.add(r.s.id));renderPractices()};
+$('pNone').onclick=()=>{selected.clear();renderPractices()};
+$('pReview').onclick=()=>{if(!selected.size)return;reviewSet=viewSessions();setTab('review')};
+$('pRefresh').onclick=()=>cloud?refreshCloud(true):st('Connect the cloud first (☁ Cloud)');
+$('npDate').value=localDate(new Date());
+function newPractice(source){const name=$('npName').value.trim(),date=$('npDate').value||localDate(new Date());
+ save();S=freshState();S.name=name||`Practice ${prettyDate(date)}`;S.date=date;S.source=source;player=null;save();
+ $('npName').value='';$('npLink').value='';return S}
+$('npCreate').onclick=()=>{const raw=$('npLink').value.trim(),id=raw?ytIdFrom(raw):null;
+ if(raw&&!id){st('That doesn\'t look like a YouTube link');return}
+ const s=newPractice(id?{type:'yt',id}:null);openForCoding(s);if(!id)st(`Created ${practiceLabel(s)} — load its video (YouTube link or file) to start coding`)};
+$('npFile').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const key=`${f.name}|${f.size}`;fileURLs[key]=fileURLs[key]||URL.createObjectURL(f);
+ const s=newPractice({type:'file',name:f.name,size:f.size});openForCoding(s)};
+$('npLink').addEventListener('keydown',e=>{if(e.key==='Enter')$('npCreate').click()});
+
+// ---------- Playhead loop: also enforces clip end points ----------
+// Runs on a timer rather than requestAnimationFrame so clips still stop on time when the tab is in the background.
+let lastT=-1,lastD=-1,lastPaused=null;
+function tick(){const t=now(),D=dur(),p=src.paused(),c=queue&&queue[qi];
+ if(c&&!p&&performance.now()>guardUntil&&isLoaded(c.s)&&t>=c.end){
+  if(qi+1<queue.length){qi++;if(cueClip(queue[qi]))st(`Playing ${qi+1}/${queue.length}`);renderClips()}
+  else{src.pause();queue=null;st('Playlist finished');renderClips()}}
+ if(Math.abs(D-lastD)>1){lastD=D;renderTimeline()}
+ if(t!==lastT){lastT=t;updNow()}
+ if(p!==lastPaused){lastPaused=p;$('playBtn').textContent=p?'Play':'Pause'}
+ $('keyLive').classList.toggle('on',document.hasFocus()&&document.activeElement?.tagName!=='IFRAME')}
+const tlSession=()=>tab==='code'?S:viewSessions().find(isLoaded);
+function updNow(){const t=now(),D=dur();
+ $('clock').textContent=`${fmt(t)} / ${fmt(D)}`;
+ $('ph').style.left=D?`${t/D*100}%`:'0';
+ const P=tab==='code'?possAt(S,t):null;
+ $('posG').classList.toggle('on',!!P&&P.team==='GOLD');$('posB').classList.toggle('on',!!P&&P.team==='BLUE');
+ $('nowPoss').innerHTML=P?`Now in <b>${P.team}</b> possession #${P.tn} (overall #${P.n}) · ${(t-P.start).toFixed(1)}s in`:'No possession at this point in the video';
+ const TP=tlSession()&&possAt(tlSession(),t);
+ document.querySelectorAll('.seg').forEach(s=>s.classList.toggle('cur',!!TP&&+s.dataset.id===TP.id))}
+function renderTimeline(){const D=dur(),s=tlSession();
+ if(!D||!s){$('tlSegs').innerHTML='';$('tlTicks').innerHTML='';return}
+ $('tlSegs').innerHTML=possessions(s).map(P=>{const e=P.end??D;return `<div class="seg" data-id="${P.id}" title="${P.team} #${P.tn} ${fmt(P.start)}–${fmt(e)}" style="left:${P.start/D*100}%;width:${Math.max(.15,(e-P.start)/D*100)}%;${TEAMCSS[P.team]}"></div>`}).join('');
+ $('tlTicks').innerHTML=codedEvents(s).map(e=>`<div class="tick ${e.k==='stat'?'':e.make?'mk':'ms'}" style="left:${e.t/D*100}%" title="${esc(evLabel(e))} · ${esc(e.p)} @ ${fmt(e.t)}"></div>`).join('')}
+
+// ---------- Hotkeys ----------
+const KEYS=[
+ ['Players',[['1–9','Player 1–9','num'],['0','Player 10','num']]],
+ ['Possession',[['P','New poss (switch)','p'],['G','Gold possession','g'],['H','Blue possession','h'],['Z','End / dead ball','z']]],
+ ['Offense',STATS.filter(s=>s[3]==='off').map(s=>[s[2].toUpperCase(),s[1],s[2]])],
+ ['Defense',STATS.filter(s=>s[3]==='def').map(s=>[s[2].toUpperCase(),s[1],s[2]])],
+ ['Shots & FTs',[['S','Practice shot (chart)','s'],['+','Made free throw','+'],['X','Missed free throw','x']]],
+ ['In shot chart',[['0–9','Shooter','sc'],['+ / −','Make / miss','sc'],['Enter','Log shot','sc'],['Esc','Close','sc']]],
+ ['Video & clips',[['Space','Play / pause','space'],['← →','Back / fwd 3s','arrow'],['⇧ ← →','Back / fwd 10s','arrow'],['[ ]','Prev / next clip','clip'],['⌘/Ctrl Z','Undo last','undo']]]];
+$('keys').innerHTML=KEYS.map(([g,rows])=>`<h4>${g}</h4>`+rows.map(([k,l,id])=>`<div class="kr" data-k="${esc(id)}"><kbd>${esc(k)}</kbd>${esc(l)}</div>`).join('')).join('');
+function setKeysHidden(h){$('keys').classList.toggle('hidden',h);$('keysTog').textContent=h?'show':'hide';LS.set('keysHidden',h)}
+$('keysHd').onclick=()=>setKeysHidden(!$('keys').classList.contains('hidden'));
+if(LS.get('keysHidden'))setKeysHidden(true);
+function flash(...ids){ids.forEach(id=>document.querySelectorAll(`[data-k="${CSS.escape(id)}"]`).forEach(el=>{el.classList.add('hit');setTimeout(()=>el.classList.remove('hit'),220)}))}
+const VIDEO_ACTIONS={' ':togglePlay,'[':()=>stepClip(-1),']':()=>stepClip(1)};
+const ACTIONS={...VIDEO_ACTIONS,p:flipPoss,g:()=>startPoss('GOLD'),h:()=>startPoss('BLUE'),z:endPoss,s:toggleShot,x:()=>ft(false),'-':()=>ft(false),'+':()=>ft(true),'=':()=>ft(true)};
+STATS.forEach(([code,,k])=>ACTIONS[k]=()=>stat(code));
+const FLASH_ID={' ':'space','=':'+','-':'x','[':'clip',']':'clip'};
+document.addEventListener('keydown',e=>{
+ if(document.querySelector('dialog[open]')||tab==='practices')return;
+ const tg=e.target,tag=tg.tagName,k=e.key;
+ if(tag==='TEXTAREA'||tg.isContentEditable||(tag==='INPUT'&&!['checkbox','radio','button','file'].includes(tg.type)))return;
+ const coding=tab==='code';
+ if((e.metaKey||e.ctrlKey)&&!e.altKey&&k.toLowerCase()==='z'){if(!coding)return;e.preventDefault();undo();flash('undo');return}
+ if(e.metaKey||e.ctrlKey||e.altKey)return;
+ if(k==='ArrowLeft'||k==='ArrowRight'){e.preventDefault();skip((k==='ArrowLeft'?-1:1)*(e.shiftKey?10:3));flash('arrow');return}
+ if(e.repeat){if(k.length===1)e.preventDefault();return}
+ if(coding&&shotOpen()){
+  let hit=true;
+  if(/^[0-9]$/.test(k)){const p=digitPlayer(k);$('shooter').value=p;player=p;drawPlayers();$('err').textContent=''}
+  else if(k==='+'||k==='=')$('res').value='+';
+  else if(k==='-')$('res').value='-';
+  else if(k==='Enter')logShot();
+  else if(k==='Escape'||k.toLowerCase()==='s'){closeShot();st('Shot cancelled')}
+  else if(k===' ')togglePlay();
+  else hit=false;
+  if(hit){e.preventDefault();flash('sc')}else if(k.length===1)e.preventDefault();
+  return}
+ if(coding&&/^[0-9]$/.test(k)){e.preventDefault();pickPlayer(digitPlayer(k));flash('num','n'+k);return}
+ const id=k.length===1?k.toLowerCase():k,a=(coding?ACTIONS:VIDEO_ACTIONS)[id];
+ if(a){e.preventDefault();a();flash(FLASH_ID[id]||id)}
+},true);
+// Buttons keep focus after a click, which would make Space/Enter re-press them. Hand focus back to the page.
+document.addEventListener('click',e=>{const b=e.target.closest('button,summary');if(b&&!b.closest('dialog'))b.blur()});
+// Clicking inside the YouTube player moves keyboard focus into its iframe, where our hotkeys can't hear it. Take it back.
+window.addEventListener('blur',()=>setTimeout(()=>{if(document.activeElement&&document.activeElement.tagName==='IFRAME'){window.focus();$('focusSink').focus()}},60));
+document.addEventListener('click',e=>{const m=document.querySelector('details.menu[open]');if(m&&!m.contains(e.target))m.open=false});
+
+// ---------- Edit / persistence ----------
+function del(id){if(tab!=='code')return;const i=S.events.findIndex(e=>e.id===id);if(i<0)return;const [e]=S.events.splice(i,1);save();render();st(`Deleted: ${evLabel(e)}${e.p&&e.k!=='sub'?' · '+e.p:''} @ ${fmt(e.t)}`)}
+function undo(){const e=S.events.pop();save();st(e?`Undid: ${evLabel(e)}`:'Nothing to undo');render()}
+$('undo').onclick=undo;
+$('reset').onclick=()=>{if(S.events.length&&!confirm(`Clear all coded events for ${practiceLabel(S)}?`))return;S.events=[];S.nextId=1;S.lineup=defLineup();player=null;stopQueue();save();drawAll();st('Cleared this practice\'s coding')};
+$('sessName').addEventListener('change',()=>{S.name=$('sessName').value.trim();save();$('sessName').blur()});
+$('sessDate').addEventListener('change',()=>{S.date=$('sessDate').value;save();$('sessDate').blur()});
+$('sessName').addEventListener('keydown',e=>{if(e.key==='Enter')$('sessName').blur()});
+function renderName(){if(document.activeElement!==$('sessName'))$('sessName').value=S.name||'';if(document.activeElement!==$('sessDate'))$('sessDate').value=S.date||''}
+function download(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+const slug=s=>(s||'practice').replace(/\.[^.]+$/,'').replace(/[^\w.-]+/g,'_');
+const base=()=>{const VS=viewSessions();return VS.length>1?`${VS.length}_practices`:slug(VS[0]&&(VS[0].name||VS[0].date))};
+$('expJson').onclick=()=>{const s=viewSessions()[0]||S;download(`${slug(s.name)}_coding.json`,JSON.stringify({app:'mockbball',version:3,...s},null,1),'application/json')};
+$('impJson').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(txt=>{const d=JSON.parse(txt);
+  if(!Array.isArray(d.events))throw 0;const s=normalize(d);persist(s);openForCoding(s);st(`Opened ${f.name} (${s.events.length} events)`)})
+ .catch(()=>st('Could not read that file — expected a Practice CW .json export'));e.target.value=''};
+const csvq=s=>`"${String(s??'').replace(/"/g,'""')}"`;
+$('expCsv').onclick=()=>{const L=clipList(),poss=$('fMode').value==='poss';
+ const rows=[['practice','date','clip','team','start','end','start_s','end_s','duration_s',poss?'points':'player','events','youtube_link']];
+ L.forEach((c,i)=>rows.push([c.s.name,c.s.date,poss?c.P.n:i+1,c.team,fmt(c.start),fmt(c.end),c.start.toFixed(2),c.end.toFixed(2),(c.end-c.start).toFixed(2),poss?c.pt:c.e.p,
+  (poss?c.E:[c.e]).map(e=>`${evLabel(e)} ${e.p}`).join('; '),ytLink(c.s,c.start)]));
+ download(`${base()}_${poss?'possessions':'events'}.csv`,rows.map(r=>r.map(csvq).join(',')).join('\n'),'text/csv')};
+$('expSh').onclick=()=>{const L=clipList(),poss=$('fMode').value==='poss';if(!L.length){st('No clips to export');return}
+ const srcName=s=>s.source&&s.source.type==='file'?s.source.name:`${slug(s.name||s.date)}.mp4`;
+ const anyYT=L.some(c=>c.s.source&&c.s.source.type==='yt');
+ const lines=['#!/bin/sh','# Cuts the currently filtered clips out of the source videos. Run in the folder with the video files.',
+  ...(anyYT?['# YouTube practices: download each stream first (YouTube Studio → Content → ⋮ → Download) and save it under the name used below.']:[]),
+  `OUT=${JSON.stringify(base()+'_clips')}`,'mkdir -p "$OUT"',
+  ...L.map((c,i)=>{const name=`${String(i+1).padStart(3,'0')}_${slug(c.s.date)}_${c.team||'X'}_${poss?'poss'+c.P.n:(c.e.stat||c.e.label||'FT').replace(/[^\w]+/g,'')}`;
+   return `ffmpeg -y -loglevel error -ss ${c.start.toFixed(2)} -i ${JSON.stringify(srcName(c.s))} -t ${(c.end-c.start).toFixed(2)} -c:v libx264 -preset veryfast -c:a aac "$OUT/${name}.mp4"`})];
+ download(`${base()}_clips.sh`,lines.join('\n')+'\n','text/x-shellscript');st(`Exported ffmpeg script for ${L.length} clips`)};
+
+// ---------- Cloud sync (Supabase REST) ----------
+// sessions: full practice JSON (reopens in the app). possessions / events: one row each, with timestamps, for the stat sheet and SQL queries.
+let cloud=LS.get('cloud'),tablesWarned=false;const cloudTimers={};
+function cloudState(txt,cls){$('cloudBtn').textContent='☁ Cloud: '+txt;$('cloudBtn').dataset.s=cls||''}
+async function cloudFetch(path,opt={},cfg=cloud){
+ const h={apikey:cfg.key,'Content-Type':'application/json',...(opt.headers||{})};if(/^eyJ/.test(cfg.key))h.Authorization='Bearer '+cfg.key;
+ const r=await fetch(cfg.url.replace(/\/+$/,'')+'/rest/v1/'+path,{...opt,headers:h});
+ const txt=await r.text();if(!r.ok)throw new Error(`${r.status} ${txt.slice(0,180)}`);return txt?JSON.parse(txt):null}
+function queueCloud(s){if(!cloud)return;clearTimeout(cloudTimers[s.id]);cloudState('saving…');cloudTimers[s.id]=setTimeout(()=>pushCloud(s),1500)}
+function cloudRows(s){const PS=possessions(s),sid=s.id,pre=num('padPre',4);
+ const possRows=PS.map(P=>({session_id:sid,n:P.n,team:P.team,team_n:P.tn,start_s:+P.start.toFixed(2),end_s:P.end==null?null:+P.end.toFixed(2),points:possPts(P,possEvents(s,P)),video_url:ytLink(s,P.start)}));
+ const evRows=codedEvents(s).map(e=>{const P=PS.find(P=>inPoss(P,e.t));
+  return{session_id:sid,id:e.id,possession_n:P?P.n:null,t:+e.t.toFixed(2),kind:e.k,stat:e.k==='stat'?e.stat:e.k==='shot'?e.label:'FT',player:e.p,team:e.team,
+   make:e.k==='stat'?null:!!e.make,zone:e.zone||null,grade:e.grade||null,x:e.x??null,y:e.y??null,video_url:ytLink(s,e.t-pre)}});
+ return{possRows,evRows}}
+async function pushCloud(s,keepalive){delete cloudTimers[s.id];if(!cloud||!lib.has(s.id))return;
+ try{await cloudFetch('sessions',{method:'POST',keepalive:!!keepalive,headers:{Prefer:'resolution=merge-duplicates,return=minimal'},
+   body:JSON.stringify([{id:s.id,name:s.name||'Untitled practice',practice_date:s.date||null,source:s.source,data:s,updated_at:s.updated}])})}
+ catch(err){cloudState('error','err');st('Cloud save failed — '+err.message+(/practice_date/.test(err.message)?' — re-run the setup SQL in the Cloud dialog':'')+' (still saved in this browser)');return}
+ libPut(s,{cloud:true});if(keepalive)return;
+ try{const{possRows,evRows}=cloudRows(s),q=`session_id=eq.${encodeURIComponent(s.id)}`;
+  // Replace this practice's rows wholesale: possessions renumber whenever a marker is added or removed mid-film.
+  await cloudFetch(`possessions?${q}`,{method:'DELETE'});await cloudFetch(`events?${q}`,{method:'DELETE'});
+  if(possRows.length)await cloudFetch('possessions',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify(possRows)});
+  if(evRows.length)await cloudFetch('events',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify(evRows)});
+  cloudState('saved '+new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}),'ok')}
+ catch(err){cloudState('saved (practice only)','ok');
+  if(!tablesWarned){tablesWarned=true;st(`Practice saved to cloud, but possession/event rows failed — re-run the setup SQL in the Cloud dialog. (${err.message})`)}}
+ if(tab==='practices')renderPractices()}
+window.addEventListener('pagehide',()=>Object.keys(cloudTimers).forEach(id=>{clearTimeout(cloudTimers[id]);const s=getSess(id);if(s)pushCloud(s,true)}));
+// Pull every practice from the cloud into the Practices list; the newer copy wins.
+async function refreshCloud(loud){if(!cloud)return;
+ try{const rows=await cloudFetch('sessions?select=id,updated_at,data&order=updated_at.desc&limit=1000');
+  rows.forEach(r=>{const d=normalize({...r.data,id:r.id}),cur=lib.get(r.id);
+   if(cur&&(cur.s.updated||'')>=(d.updated||''))libPut(cur.s,{cloud:true});
+   else if(S.id===r.id&&tab==='code')libPut(S,{cloud:true});
+   else{libPut(d,{cloud:true});if(S.id===r.id)S=d}});
+  if(loud)st(`Cloud: ${rows.length} practice${rows.length===1?'':'s'}`);if(tab==='practices')renderPractices()}
+ catch(err){cloudState('error','err');st('Cloud refresh failed — '+err.message)}}
+$('cloudBtn').onclick=()=>{$('cUrl').value=cloud?cloud.url:'';$('cKey').value=cloud?cloud.key:'';$('cMsg').textContent=cloud?'Connected':'';$('cloudDlg').showModal()};
+$('cClose').onclick=()=>$('cloudDlg').close();
+$('cConnect').onclick=async()=>{const cfg={url:$('cUrl').value.trim(),key:$('cKey').value.trim()};
+ if(!/^https?:\/\//.test(cfg.url)||!cfg.key){$('cMsg').textContent='Enter the project URL and key';return}
+ $('cMsg').textContent='Connecting…';
+ try{await cloudFetch('sessions?select=id&limit=1',{},cfg);cloud=cfg;tablesWarned=false;LS.set('cloud',cfg);cloudState('on','ok');
+  await refreshCloud();
+  const up=[...lib.values()].filter(x=>!x.cloud).map(x=>x.s);for(const s of up)await pushCloud(s);
+  $('cMsg').textContent=`Connected${up.length?` · uploaded ${up.length} practice${up.length===1?'':'s'} from this browser`:''} — practices are in the Practices tab`;
+  if(tab==='practices')renderPractices()}
+ catch(err){$('cMsg').textContent=`Couldn't connect: ${err.message}${/42P01|does not exist|PGRST205/.test(err.message)?' — run the setup SQL below first':''}`}};
+$('cOff').onclick=()=>{cloud=null;LS.del('cloud');cloudState('off');[...lib.values()].forEach(x=>x.cloud=false);$('cMsg').textContent='Disconnected (practices stay in the cloud)';if(tab==='practices')renderPractices()};
+$('cCopy').onclick=()=>{navigator.clipboard.writeText($('sql').textContent).then(()=>$('cMsg').textContent='SQL copied',()=>{})};
+
+// ---------- Stat sheet tables ----------
+function render(){
+ const VS=viewSessions(),multi=VS.length>1;
+ $('dots').innerHTML=S.events.filter(e=>e.k==='shot'&&e.x!=null).map(e=>`<circle cx="${e.x}" cy="${e.y}" r="7" fill="${e.make?'#2e9e3a':'#d63b1f'}" stroke="#fff" stroke-width="2"><title>${esc(e.p)} ${e.make?'+':'-'} ${esc(e.label)}</title></circle>`).join('');
+ $('reviewing').textContent=tab==='review'?(multi?`Reviewing ${VS.length} practices combined`:VS[0]?`Reviewing ${practiceLabel(VS[0])}`:''):'';
+ $('nowPractice').textContent=tab==='review'&&multi?(VS.find(isLoaded)?practiceLabel(VS.find(isLoaded)):''):'';
+ $('statTitle').textContent=!VS.length?'Combined stat sheet':multi?`Combined stat sheet — ${VS.length} practices`:`Stat sheet — ${practiceLabel(VS[0])}`;
+ $('statHint').textContent=!VS.length?'Tick practices above to combine their stats':multi?`${VS.map(s=>prettyDate(s.date)).join(', ')} · click any blue number to watch those possessions`:'Click any blue number to watch those possessions';
+ $('statBody').classList.toggle('hidden',!VS.length);
+ const f=a=>`${a.filter(e=>e.make).length}-${a.length}`;
+ const ev=VS.flatMap(codedEvents),PS=VS.flatMap(s=>possessions(s));
+ const tr=['GOLD','BLUE'].map(t=>{const E=ev.filter(e=>e.team===t),TP=PS.filter(P=>P.team===t),P=TP.length,S2=E.filter(e=>e.k==='shot'),z=n=>S2.filter(e=>e.zone===n),pt=E.reduce((a,e)=>a+pts(e),0);
+  const len=TP.filter(x=>x.end!=null),TO=E.filter(e=>e.stat==='TO').length;
+  return `<tr><td style="text-align:left;${TEAMCSS[t]}">${t}</td>${cell(P,{team:t})}${cell(pt,{team:t,out:'score'})}<td>${P?(pt/P).toFixed(2):'–'}</td><td>${len.length?(len.reduce((a,x)=>a+x.end-x.start,0)/len.length).toFixed(1)+'s':'–'}</td>${cell(S2.length,{team:t,tag:'Shot'},f(S2))}${cell(z('RIM').length,{team:t,tag:'RIM'},f(z('RIM')))}${cell(z('PAINT').length,{team:t,tag:'PAINT'},f(z('PAINT')))}${cell(z('N PAINT').length,{team:t,tag:'N PAINT'},f(z('N PAINT')))}${cell(z('3').length,{team:t,tag:'3PT'},f(z('3')))}${cell(TO,{team:t,tag:'TO'})}</tr>`}).join('');
+ $('team').innerHTML=`<table class="st"><tr><th style="text-align:left">Team</th><th>Poss</th><th>Pts</th><th>PPP</th><th>Avg poss</th><th>FG</th><th>Rim</th><th>Paint</th><th>N paint</th><th>3P</th><th>TO</th></tr>${tr}</table>`;
+ const ps=ROSTER.filter(p=>ev.some(e=>e.p===p));
+ $('box').innerHTML=ps.length?`<table class="st"><tr><th style="text-align:left">Player</th>${multi?'<th title="Practices with a stat">Prac</th>':''}<th>Pts</th><th>FG</th><th>3P</th><th>FT</th><th>REB</th>${STATS.map(s=>`<th title="${esc(s[1])}">${esc(s[0])}</th>`).join('')}</tr>${ps.map(p=>{const E=ev.filter(e=>e.p===p),S2=E.filter(e=>e.k==='shot'),S3=S2.filter(e=>e.zone==='3'),F=E.filter(e=>e.k==='ft'),c=s=>E.filter(e=>e.stat===s).length,PT=E.reduce((a,e)=>a+pts(e),0);
+  const np=VS.filter(s=>codedEvents(s).some(e=>e.p===p)).length;
+  return `<tr><td class="cl" style="text-align:left" data-f="${esc(JSON.stringify({pl:p}))}" data-key="${esc(cellKey({pl:p}))}" title="Every possession ${esc(p)} has a stat in">${esc(p)}</td>${multi?`<td>${np}</td>`:''}${cell(PT,{pl:p,tag:'Scoring'})}${cell(S2.length,{pl:p,tag:'Shot'},f(S2))}${cell(S3.length,{pl:p,tag:'3PT'},f(S3))}${cell(F.length,{pl:p,tag:'FT'},f(F))}${cell(c('OREB')+c('DREB'),{pl:p,tag:'REB'})}${STATS.map(s=>cell(c(s[0]),{pl:p,tag:s[0]})).join('')}</tr>`}).join('')}</table>`:'<span class="faint">No player events yet</span>';
+ $('logWrap').classList.toggle('hidden',VS.length!==1);
+ if(VS.length===1){const s=VS[0],L=[...s.events].sort((a,b)=>b.t-a.t||b.id-a.id),canDel=tab==='code';
+  $('log').innerHTML=L.length?L.map(e=>{const col=(e.k==='shot'||e.k==='ft')?(e.make?'var(--good)':'var(--bad)'):e.k==='poss'?(e.team==='GOLD'?'var(--gold-text)':'var(--link)'):'var(--text)';
+   const who=e.k==='stat'||e.k==='shot'||e.k==='ft'?` · ${esc(e.p)}`:'';
+   return `<div data-t="${e.t}"><span class="faint" style="width:56px">${fmt(e.t)}</span><span style="color:${col};flex:1">${e.k==='poss'||e.k==='end'?'— '+esc(evLabel(e))+' —':esc(evLabel(e))}${who}${e.grade?' · '+esc(e.grade):''}</span>${canDel?`<button class="x" data-del="${e.id}" title="Delete">×</button>`:''}</div>`}).join(''):'<span class="faint">No events yet</span>'}
+ renderTimeline();renderClips();renderName();lastT=-1}
+function drawAll(){drawPlayers();drawLineups();fillShooter();render()}
+
+// ---------- Boot ----------
+loadLocalLib();
+{const cur=LS.get('current'),s=cur&&lib.get(cur);if(s)S=s.s}
+fillFilters();
+if(cloud){cloudState('on','ok');refreshCloud()}
+const savedTab=LS.get('tab');
+setTab(savedTab==='practices'||(!lib.size&&savedTab!=='code')?'practices':'code');
+setInterval(tick,50);
+</script>
+</body>
+</html>
