@@ -2,16 +2,17 @@
 
 A Sportscode-style coding window for basketball practice film. Dark mode by default (toggle in the top bar). Code possessions and stats with hotkeys while the video plays; every possession becomes a clip you can filter and play back.
 
-## Run it
+## Open it
 
-YouTube embeds don't work on pages opened straight from disk, so serve the folder:
+**https://mpkcb21.github.io/mockbball/**
+
+It's hosted on GitHub Pages straight from `main`, so any push updates the live site within a minute or two. Nothing to install.
+
+For working on it locally, serve the folder (YouTube embeds don't work on pages opened straight from disk):
 
 ```sh
-python3 -m http.server 8000
-# open http://localhost:8000
+python3 -m http.server 8000   # then open http://localhost:8000
 ```
-
-(Local video files work either way.)
 
 ## Practices tab
 
@@ -82,7 +83,7 @@ Setup:
 
 1. Create a free project at supabase.com.
 2. In **SQL Editor**, run the setup SQL from the app's **☁ Cloud** dialog (it's safe to re-run if you set up the older single-table version).
-3. In the app, click **☁ Cloud**, paste the project URL and the anon/publishable key (Project Settings → API), and press *Connect*.
+3. Open the app at https://mpkcb21.github.io/mockbball/, click **☁ Cloud**, paste the project URL and the anon/publishable key (Project Settings → API), and press *Connect*.
 4. Every coach who connects with the same key sees the same list in the **Practices** tab. Practices already saved in your browser upload automatically on connect.
 
 Anyone with the project key can read and write, so share it only with staff. If two people code the same session at once, the last save wins.

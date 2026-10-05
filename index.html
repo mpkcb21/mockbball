@@ -362,7 +362,10 @@ drop policy if exists "team read/write" on public.events;
 create policy "team read/write" on public.sessions for all to anon, authenticated using (true) with check (true);
 create policy "team read/write" on public.possessions for all to anon, authenticated using (true) with check (true);
 create policy "team read/write" on public.events for all to anon, authenticated using (true) with check (true);
-grant select, insert, update, delete on public.sessions, public.possessions, public.events to anon, authenticated;</pre>
+grant select, insert, update, delete on public.sessions, public.possessions, public.events to anon, authenticated;
+
+-- Make the API pick up the new tables right away
+notify pgrst, 'reload schema';</pre>
  <button class="bt gry sm" id="cCopy">Copy SQL</button>
  <div class="faint" style="margin-top:6px">These policies let anyone with your project key read and write — fine for a staff tool, but don't post the key publicly.</div>
  </details>
