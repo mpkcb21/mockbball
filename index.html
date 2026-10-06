@@ -307,7 +307,6 @@ body[data-tab=review] .chartgrid{grid-template-columns:minmax(0,1fr) minmax(0,1f
     <line x1="220" y1="40" x2="280" y2="40" stroke="#fff" stroke-width="3"/>
     <circle cx="250" cy="52.5" r="7.5" fill="none" stroke="#E9502F" stroke-width="3"/>
     <path d="M190 470 A60 60 0 0 1 310 470" fill="none" stroke="#fff" stroke-width="3"/>
-    <g id="dots"></g>
     <circle id="pin" r="9" fill="none" stroke="#111" stroke-width="3" style="display:none"/>
    </svg>
    <div class="muted" style="font-size:11px;margin-top:4px">Click the location, then <kbd>0–9</kbd> shooter · <kbd>+</kbd>/<kbd>−</kbd> make/miss · <kbd>Enter</kbd> log · <kbd>Esc</kbd> close. Shot is stamped at <span id="shotAt" class="mono">—</span>.</div>
@@ -933,7 +932,6 @@ $('cCopy').onclick=()=>{navigator.clipboard.writeText($('sql').textContent).then
 // ---------- Stat sheet tables ----------
 function render(){
  const VS=viewSessions(),multi=VS.length>1;
- $('dots').innerHTML=S.events.filter(e=>e.k==='shot'&&e.x!=null).map(e=>`<circle cx="${e.x}" cy="${e.y}" r="7" fill="${e.make?'#2e9e3a':'#d63b1f'}" stroke="#fff" stroke-width="2"><title>${esc(e.p)} ${e.make?'+':'-'} ${esc(e.label)}</title></circle>`).join('');
  $('reviewing').textContent=tab==='review'?(multi?`Reviewing ${VS.length} practices combined`:VS[0]?`Reviewing ${practiceLabel(VS[0])}`:''):'';
  $('nowPractice').textContent=tab==='review'&&multi?(VS.find(isLoaded)?practiceLabel(VS.find(isLoaded)):''):'';
  $('statTitle').textContent=!VS.length?'Combined stat sheet':multi?`Combined stat sheet — ${VS.length} practices`:`Stat sheet — ${practiceLabel(VS[0])}`;
@@ -957,7 +955,7 @@ function render(){
  sheetChart.update(shotsIn(VS),{multi:VS.length});if(tab==='players')renderPlayers();renderTimeline();renderClips();renderName();lastT=-1}
 
 // ---------- Shot chart component (stat sheet + player profiles) ----------
-const COURT=[...$('court').children].filter(n=>n.id!=='dots'&&n.id!=='pin').map(n=>n.outerHTML).join('');
+const COURT=[...$('court').children].filter(n=>n.id!=='pin').map(n=>n.outerHTML).join('');
 const pct=(m,a)=>a?Math.round(m/a*100)+'%':'–';
 const shotsIn=VS=>VS.flatMap(s=>s.events.filter(e=>e.k==='shot').map(e=>({s,e})));
 // Clicking a dot plays that shot; from a tab without video, open Review on the practices in view first.
