@@ -60,7 +60,8 @@ Open **Review** (top bar, or *Review* on a practice in the Practices tab). The c
 
 - Click any blue number in the stat sheet to play every possession behind it. For example, clicking Player 7's **TO** cell plays each possession where Player 7 committed a turnover, back to back.
 - Inside each possession row, the stat that matched is outlined. Click any tag to jump straight to that moment (a few seconds before it).
-- Clicking a player's name plays every possession they recorded a stat in.
+- **Shot chart:** below the box score, every shot from the practices in view. Click a player's name to chart just them (click again for everyone). Filter by result, zone, 3 type or grade, or click a row in the zone table (Rim, Paint, Non-paint 2, 3PT, each 3 type) to show only those shots. Click any dot to watch that shot, even if it's from a different practice than the one loaded.
+- To play every possession a player recorded a stat in, pick them in the Clips panel's **Player** filter.
 - Hotkeys in Review mode only control video (Space, arrows, `[ ]`), so nothing gets coded by accident.
 
 ## Cloud sync (Supabase)

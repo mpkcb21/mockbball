@@ -113,6 +113,17 @@ dialog{border:2px solid var(--edge);border-radius:8px;padding:14px;max-width:680
 dialog::backdrop{background:rgba(0,0,0,.5)}
 dialog pre{background:var(--pre);border:1px solid var(--line);padding:8px;font-size:11px;overflow:auto;white-space:pre;color:var(--text);max-height:320px}
 .sec{font-size:12px;color:var(--muted);margin:8px 0 4px}
+/* all-time shot chart */
+.chartgrid{display:grid;grid-template-columns:minmax(0,440px) minmax(0,1fr);gap:12px;align-items:start}
+body[data-tab=review] .chartgrid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+@media (max-width:760px){.chartgrid,body[data-tab=review] .chartgrid{grid-template-columns:1fr}}
+.cfil{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+#chartDots circle{cursor:pointer}
+#chartDots circle:hover{stroke:#111;stroke-width:3}
+#zoneTbl tr.zr{cursor:pointer}
+#zoneTbl tr.zr:hover td{background:var(--hover)}
+#zoneTbl tr.on td{background:var(--playing)}
+.st td.pname.on{outline:2px solid #F7D448;outline-offset:-2px}
 /* practices tab */
 .newp{display:grid;grid-template-columns:1.2fr 150px 1.6fr auto auto;gap:6px;align-items:end;padding:10px;border-bottom:1px solid var(--line)}
 @media (max-width:900px){.newp{grid-template-columns:1fr 1fr}}
@@ -293,6 +304,24 @@ dialog pre{background:var(--pre);border:1px solid var(--line);padding:8px;font-s
  <div id="statBody">
  <div class="sec">Team summary</div><div id="team" style="overflow-x:auto"></div>
  <div class="sec">Player box</div><div id="box" style="overflow-x:auto"></div>
+ <div class="sec">Shot chart <span class="faint">(click a dot to watch that shot · click a player's name above to chart them)</span></div>
+ <div class="chartgrid">
+  <div>
+   <svg id="chart" viewBox="0 0 500 470" width="100%" style="display:block;background:#e9c894;border:2px solid #111" role="img" aria-label="Shot chart"><g id="chartCourt"></g><g id="chartDots"></g></svg>
+   <div id="chartLegend" class="muted" style="font-size:11px;margin-top:4px"></div>
+  </div>
+  <div>
+   <div class="cfil">
+    <label class="f">Player<select id="cPl"></select></label>
+    <label class="f">Result<select id="cRes"><option value="">Makes &amp; misses</option><option value="+">Makes</option><option value="-">Misses</option></select></label>
+    <label class="f">Zone<select id="cZone"><option value="">All zones</option><option>RIM</option><option>PAINT</option><option>N PAINT</option><option value="3">3PT</option></select></label>
+    <label class="f">3 type<select id="cT3"></select></label>
+    <label class="f">Grade<select id="cGrade"></select></label>
+    <div style="display:flex;align-items:flex-end"><button class="bt gry sm" id="cClear" style="width:100%">Clear chart filters</button></div>
+   </div>
+   <div id="zoneTbl" style="margin-top:8px"></div>
+  </div>
+ </div>
  <div id="logWrap"><div class="sec">Event log <span class="faint">(click a row to jump there<span class="code-only"> · × to delete</span>)</span></div><div id="log" class="mono log"></div></div>
  </div>
 </div>
@@ -649,10 +678,11 @@ function fillFilters(){
 const cellKey=F=>[F.pl||'',F.team||'',F.tag||'',F.out||''].join('|');
 function cell(n,F,txt){const shown=txt??n;if(!n)return `<td>${n===0&&txt==null?'':shown}</td>`;
  return `<td class="cl" data-f="${esc(JSON.stringify(F))}" data-key="${esc(cellKey(F))}" title="Watch these possessions">${shown}</td>`}
-function markActiveCell(){const k=cellKey(filters());document.querySelectorAll('td.cl').forEach(td=>td.classList.toggle('on',tab!=='practices'&&td.dataset.key===k))}
+function markActiveCell(){const k=cellKey(filters());document.querySelectorAll('td.cl[data-key]').forEach(td=>td.classList.toggle('on',tab!=='practices'&&td.dataset.key===k))}
 $('statsBlk').addEventListener('click',e=>{
  const lg=e.target.closest('#log [data-del]');if(lg){del(+lg.dataset.del);return}
  const row=e.target.closest('#log [data-t]');if(row){const s=viewSessions()[0];jumpTo(s,+row.dataset.t-num('padPre',4));return}
+ const pn=e.target.closest('td[data-chart]');if(pn){const p=pn.dataset.chart;$('cPl').value=$('cPl').value===p?'':p;render();$('chart').scrollIntoView({behavior:'smooth',block:'nearest'});return}
  const td=e.target.closest('td.cl');if(!td)return;
  if(tab==='practices'){reviewSet=viewSessions();setTab('review')}
  setFilters({mode:'poss',...JSON.parse(td.dataset.f)});renderClips();
@@ -896,13 +926,43 @@ function render(){
  const ps=ROSTER.filter(p=>ev.some(e=>e.p===p));
  $('box').innerHTML=ps.length?`<table class="st"><tr><th style="text-align:left">Player</th>${multi?'<th title="Practices with a stat">Prac</th>':''}<th>Pts</th><th>FG</th><th>3P</th><th>FT</th><th>REB</th>${STATS.map(s=>`<th title="${esc(s[1])}">${esc(s[0])}</th>`).join('')}</tr>${ps.map(p=>{const E=ev.filter(e=>e.p===p),S2=E.filter(e=>e.k==='shot'),S3=S2.filter(e=>e.zone==='3'),F=E.filter(e=>e.k==='ft'),c=s=>E.filter(e=>e.stat===s).length,PT=E.reduce((a,e)=>a+pts(e),0);
   const np=VS.filter(s=>codedEvents(s).some(e=>e.p===p)).length;
-  return `<tr><td class="cl" style="text-align:left" data-f="${esc(JSON.stringify({pl:p}))}" data-key="${esc(cellKey({pl:p}))}" title="Every possession ${esc(p)} has a stat in">${esc(p)}</td>${multi?`<td>${np}</td>`:''}${cell(PT,{pl:p,tag:'Scoring'})}${cell(S2.length,{pl:p,tag:'Shot'},f(S2))}${cell(S3.length,{pl:p,tag:'3PT'},f(S3))}${cell(F.length,{pl:p,tag:'FT'},f(F))}${cell(c('OREB')+c('DREB'),{pl:p,tag:'REB'})}${STATS.map(s=>cell(c(s[0]),{pl:p,tag:s[0]})).join('')}</tr>`}).join('')}</table>`:'<span class="faint">No player events yet</span>';
+  return `<tr><td class="cl pname${$('cPl').value===p?' on':''}" style="text-align:left" data-chart="${esc(p)}" title="Show ${esc(p)}'s shot chart">${esc(p)}</td>${multi?`<td>${np}</td>`:''}${cell(PT,{pl:p,tag:'Scoring'})}${cell(S2.length,{pl:p,tag:'Shot'},f(S2))}${cell(S3.length,{pl:p,tag:'3PT'},f(S3))}${cell(F.length,{pl:p,tag:'FT'},f(F))}${cell(c('OREB')+c('DREB'),{pl:p,tag:'REB'})}${STATS.map(s=>cell(c(s[0]),{pl:p,tag:s[0]})).join('')}</tr>`}).join('')}</table>`:'<span class="faint">No player events yet</span>';
  $('logWrap').classList.toggle('hidden',VS.length!==1);
  if(VS.length===1){const s=VS[0],L=[...s.events].sort((a,b)=>b.t-a.t||b.id-a.id),canDel=tab==='code';
   $('log').innerHTML=L.length?L.map(e=>{const col=(e.k==='shot'||e.k==='ft')?(e.make?'var(--good)':'var(--bad)'):e.k==='poss'?(e.team==='GOLD'?'var(--gold-text)':'var(--link)'):'var(--text)';
    const who=e.k==='stat'||e.k==='shot'||e.k==='ft'?` · ${esc(e.p)}`:'';
    return `<div data-t="${e.t}"><span class="faint" style="width:56px">${fmt(e.t)}</span><span style="color:${col};flex:1">${e.k==='poss'||e.k==='end'?'— '+esc(evLabel(e))+' —':esc(evLabel(e))}${who}${e.grade?' · '+esc(e.grade):''}</span>${canDel?`<button class="x" data-del="${e.id}" title="Delete">×</button>`:''}</div>`}).join(''):'<span class="faint">No events yet</span>'}
- renderTimeline();renderClips();renderName();lastT=-1}
+ renderChart(VS);renderTimeline();renderClips();renderName();lastT=-1}
+
+// ---------- Shot chart: every shot in the practices in view ----------
+$('chartCourt').innerHTML=[...$('court').children].filter(n=>n.id!=='dots'&&n.id!=='pin').map(n=>n.outerHTML).join('');
+$('cPl').innerHTML='<option value="">All players</option>'+ROSTER.map(p=>`<option>${esc(p)}</option>`).join('');
+$('cT3').innerHTML='<option value="">All 3 types</option>'+T3.map(x=>`<option>${esc(x)}</option>`).join('');
+$('cGrade').innerHTML='<option value="">All grades</option>'+GRADES.map(x=>`<option>${esc(x)}</option>`).join('');
+const chartF=()=>({pl:$('cPl').value,res:$('cRes').value,zone:$('cZone').value,t3:$('cT3').value,grade:$('cGrade').value});
+const pct=(m,a)=>a?Math.round(m/a*100)+'%':'–';
+function renderChart(VS){const F=chartF(),multi=VS.length>1;
+ const all=VS.flatMap(s=>s.events.filter(e=>e.k==='shot').map(e=>({s,e})));
+ // The zone table only follows player + grade, so it keeps showing the whole split while dots narrow down.
+ const base=all.filter(({e})=>(!F.pl||e.p===F.pl)&&(!F.grade||e.grade===F.grade));
+ const shown=base.filter(({e})=>(!F.res||(F.res==='+')===!!e.make)&&(!F.zone||e.zone===F.zone)&&(!F.t3||e.label===F.t3));
+ $('chartDots').innerHTML=shown.filter(x=>x.e.x!=null).map(({s,e})=>`<circle cx="${e.x}" cy="${e.y}" r="7" fill="${e.make?'#2e9e3a':'#d63b1f'}" fill-opacity=".85" stroke="#fff" stroke-width="1.5" data-sid="${esc(s.id)}" data-t="${e.t}"><title>${esc(e.p)} · ${e.make?'Make':'Miss'} ${esc(e.label)}${e.grade?' · '+esc(e.grade):''}\n${esc(practiceLabel(s))} @ ${fmt(e.t)} — click to watch</title></circle>`).join('');
+ const mk=shown.filter(x=>x.e.make).length,noSpot=shown.filter(x=>x.e.x==null).length;
+ $('chartLegend').textContent=`${F.pl||'All players'}: ${mk}-${shown.length} (${pct(mk,shown.length)})${multi?` across ${VS.length} practices`:''}${noSpot?` · ${noSpot} logged without a spot (counted, not drawn)`:''}`;
+ const row=(label,arr,z,t3,indent)=>{const m=arr.filter(x=>x.e.make).length,a=arr.length,on=(z||t3)&&F.zone===z&&F.t3===t3;
+  return `<tr class="zr${on?' on':''}" data-z="${esc(z)}" data-t3="${esc(t3)}"><td style="text-align:left${indent?';padding-left:18px':''}">${label}</td><td>${m}-${a}</td><td>${pct(m,a)}</td><td>${pct(a,base.length)}</td></tr>`};
+ const zs=n=>base.filter(x=>x.e.zone===n),threes=zs('3');
+ $('zoneTbl').innerHTML=base.length?`<table class="st"><tr><th style="text-align:left">Zone</th><th>FG</th><th>FG%</th><th>Share</th></tr>`+
+  row('<b>All shots</b>',base,'','')+row('Rim',zs('RIM'),'RIM','')+row('Paint',zs('PAINT'),'PAINT','')+row('Non-paint 2',zs('N PAINT'),'N PAINT','')+row('3PT',threes,'3','')+
+  T3.filter(t=>threes.some(x=>x.e.label===t)).map(t=>row(esc(t),threes.filter(x=>x.e.label===t),'3',t,true)).join('')+'</table>'
+  :`<span class="faint">No shots${F.pl?' for '+esc(F.pl):''} in ${multi?'these practices':'this practice'} yet.</span>`}
+['cPl','cRes','cZone','cT3','cGrade'].forEach(i=>$(i).addEventListener('change',()=>{if(i==='cT3'&&$('cT3').value)$('cZone').value='3';if(i==='cZone'&&$('cZone').value!=='3')$('cT3').value='';$(i).blur();render()}));
+$('cClear').onclick=()=>{['cPl','cRes','cZone','cT3','cGrade'].forEach(i=>$(i).value='');render()};
+$('zoneTbl').addEventListener('click',e=>{const r=e.target.closest('tr.zr');if(!r)return;const z=r.dataset.z,t3=r.dataset.t3,same=$('cZone').value===z&&$('cT3').value===t3;
+ $('cZone').value=same?'':z;$('cT3').value=same?'':t3;render()});
+$('chartDots').addEventListener('click',e=>{const d=e.target.closest('circle[data-sid]');if(!d)return;const s=getSess(d.dataset.sid);if(!s)return;
+ if(tab==='practices'){reviewSet=viewSessions();setTab('review')}
+ jumpTo(s,+d.dataset.t-num('padPre',4));$('videoBlk').scrollIntoView({behavior:'smooth',block:'start'})});
 function drawAll(){drawPlayers();drawLineups();fillShooter();render()}
 
 // ---------- Boot ----------
