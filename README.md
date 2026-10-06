@@ -27,6 +27,15 @@ Notes on video sources:
 - **YouTube:** for live streams, turn on DVR in the stream settings so you can scrub back. The stream must be Public or Unlisted.
 - **Local files** never leave your computer. Reviewing a file-based practice needs that file loaded in this visit; the app tells you which file to load.
 
+## Roster (names stay private)
+
+Players start as placeholders, **Player 1–10**. Real names live only in your Supabase `players` table, so nobody sees them without the project key. They aren't in the page, the public site, or saved coding files. Only player IDs are stored with the stats.
+
+- Connect **☁ Cloud**, open the **Players** tab, and click **✎ Edit roster**.
+- **Rename** a placeholder (e.g. Player 3 → Jordan Smith, #23), and every stat already logged for Player 3 now shows as Jordan Smith.
+- **Add players** beyond ten, and untick **Active** to hide someone from lineups without losing their history.
+- Without the key, everyone shows as Player 1–10, or "Unknown player" for players that were added in the cloud.
+
 ## Players tab
 
 A profile for each player built from every practice the app knows about: this browser, plus the cloud when it's connected. Use the date range to look at a stretch (e.g. the last two weeks), or *All time*.
@@ -42,11 +51,11 @@ Press **P** (or GOLD / BLUE POSSESSION) when a possession starts. That marks the
 
 ## Hotkeys
 
-The full key is in the top-right of the app. Typical flow: **number → letter** (e.g. `7` then `T` = turnover on Player 7).
+The full key is in the top-right of the app. Typical flow: **number → letter** (e.g. `7` then `T` = turnover on whoever is in Blue's second lineup spot). Numbers pick **lineup slots**, not players: `1`–`5` are Gold left to right, `6`–`9` then `0` are Blue. Each player button shows its key.
 
 | Key | Action | Key | Action |
 |---|---|---|---|
-| 1–9, 0 | Select Player 1–9, Player 10 | P | New possession (switch team) |
+| 1–5 / 6–9, 0 | Select Gold / Blue lineup slot | P | New possession (switch team) |
 | G / H | Gold / Blue possession | Z | End / dead ball |
 | A | Assist | Y | Assist opportunity |
 | T | Turnover | O | Offensive rebound |
