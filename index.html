@@ -30,7 +30,8 @@ a{color:var(--link)}
 .main{display:grid;grid-template-columns:minmax(0,1fr) 470px;gap:0;align-items:start}
 body[data-tab=review] .main{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
 body[data-tab=review] #codeWin,body[data-tab=review] #keysBlk{display:none}
-body[data-tab=practices] .main{display:none}
+body[data-tab=practices] .main,body[data-tab=players] .main,body[data-tab=players] #statsBlk{display:none}
+body:not([data-tab=players]) #playersView{display:none}
 body:not([data-tab=practices]) #practicesView{display:none}
 body:not([data-tab=code]) .code-only{display:none!important}
 @media (max-width:1100px){.main,body[data-tab=review] .main{grid-template-columns:1fr}.right{order:-1}body[data-tab=review] .right{order:0}}
@@ -113,16 +114,27 @@ dialog{border:2px solid var(--edge);border-radius:8px;padding:14px;max-width:680
 dialog::backdrop{background:rgba(0,0,0,.5)}
 dialog pre{background:var(--pre);border:1px solid var(--line);padding:8px;font-size:11px;overflow:auto;white-space:pre;color:var(--text);max-height:320px}
 .sec{font-size:12px;color:var(--muted);margin:8px 0 4px}
+/* player profiles */
+#ppList .bt{height:46px}
+.phead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:4px}
+.phead b{font-size:20px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px;margin:8px 0}
+.tile{border:1px solid var(--line2);border-radius:6px;padding:6px 8px;background:var(--hover)}
+.tile .v{font-size:20px;font-weight:600}.tile .l{font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.4px}
+.tile .s{font-size:11px;color:var(--muted)}
+.profsplits{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:760px){.profsplits{grid-template-columns:1fr}}
 /* all-time shot chart */
 .chartgrid{display:grid;grid-template-columns:minmax(0,440px) minmax(0,1fr);gap:12px;align-items:start}
 body[data-tab=review] .chartgrid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 @media (max-width:760px){.chartgrid,body[data-tab=review] .chartgrid{grid-template-columns:1fr}}
 .cfil{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-#chartDots circle{cursor:pointer}
-#chartDots circle:hover{stroke:#111;stroke-width:3}
-#zoneTbl tr.zr{cursor:pointer}
-#zoneTbl tr.zr:hover td{background:var(--hover)}
-#zoneTbl tr.on td{background:var(--playing)}
+.cdots circle{cursor:pointer}
+.cdots circle:hover{stroke:#111;stroke-width:3}
+.ztbl tr.zr{cursor:pointer}
+.ztbl tr.zr:hover td{background:var(--hover)}
+.ztbl tr.on td{background:var(--playing)}
+
 .st td.pname.on{outline:2px solid #F7D448;outline-offset:-2px}
 /* practices tab */
 .newp{display:grid;grid-template-columns:1.2fr 150px 1.6fr auto auto;gap:6px;align-items:end;padding:10px;border-bottom:1px solid var(--line)}
@@ -144,7 +156,7 @@ body[data-tab=review] .chartgrid{grid-template-columns:minmax(0,1fr) minmax(0,1f
 <div class="bar">
  <span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span>
  <span style="margin-left:8px;font-weight:500">Practice CW</span>
- <span class="seg-ctl" style="margin-left:6px"><button class="bt sm" id="tabPractices">Practices</button><button class="bt sm on" id="tabCode">Code</button><button class="bt sm" id="tabReview">Review</button></span>
+ <span class="seg-ctl" style="margin-left:6px"><button class="bt sm" id="tabPractices">Practices</button><button class="bt sm on" id="tabCode">Code</button><button class="bt sm" id="tabReview">Review</button><button class="bt sm" id="tabPlayers">Players</button></span>
  <input id="sessName" class="txt code-only" placeholder="Practice name" style="margin-left:6px;width:200px">
  <input id="sessDate" type="date" class="txt code-only" style="width:140px">
  <span id="reviewing" class="muted" style="margin-left:6px"></span>
@@ -180,6 +192,30 @@ body[data-tab=review] .chartgrid{grid-template-columns:minmax(0,1fr) minmax(0,1f
    <button class="bt gry sm" id="pRefresh">↻ Refresh from cloud</button>
   </div>
   <div class="pwrap"><table class="ptable" id="pTable"></table></div>
+ </div>
+</div>
+
+<!-- PLAYERS TAB -->
+<div id="playersView">
+ <div class="blk">
+  <div class="hd">PLAYER PROFILES</div>
+  <div class="ptools">
+   <span class="muted">Practices from</span><input type="date" id="ppFrom" class="txt" style="width:140px"><span class="muted">to</span><input type="date" id="ppTo" class="txt" style="width:140px">
+   <button class="bt gry sm" id="ppAllTime">All time</button>
+   <span style="flex:1"></span><span id="ppScope" class="faint"></span>
+  </div>
+  <div class="g" id="ppList" style="grid-template-columns:repeat(10,minmax(0,1fr))"></div>
+  <div id="profEmpty" class="faint" style="padding:16px"></div>
+  <div id="profBody" style="padding:10px">
+   <div id="profHead"></div>
+   <div class="sec">Totals <span class="faint">· click a total to watch those possessions</span></div><div id="profTotals" style="overflow-x:auto"></div>
+   <div class="sec">Shot chart &amp; shooting splits <span class="faint">· click a dot to watch the shot · click a zone row to filter</span></div><div id="profChart"></div>
+   <div class="profsplits">
+    <div><div class="sec">By shot grade</div><div id="profGrades"></div></div>
+    <div><div class="sec">Free throws</div><div id="profFT"></div></div>
+   </div>
+   <div class="sec">Practice log <span class="faint">· click a number to watch it from that practice</span></div><div id="profLog" style="overflow-x:auto"></div>
+  </div>
  </div>
 </div>
 
@@ -305,23 +341,7 @@ body[data-tab=review] .chartgrid{grid-template-columns:minmax(0,1fr) minmax(0,1f
  <div class="sec">Team summary</div><div id="team" style="overflow-x:auto"></div>
  <div class="sec">Player box</div><div id="box" style="overflow-x:auto"></div>
  <div class="sec">Shot chart <span class="faint">(click a dot to watch that shot · click a player's name above to chart them)</span></div>
- <div class="chartgrid">
-  <div>
-   <svg id="chart" viewBox="0 0 500 470" width="100%" style="display:block;background:#e9c894;border:2px solid #111" role="img" aria-label="Shot chart"><g id="chartCourt"></g><g id="chartDots"></g></svg>
-   <div id="chartLegend" class="muted" style="font-size:11px;margin-top:4px"></div>
-  </div>
-  <div>
-   <div class="cfil">
-    <label class="f">Player<select id="cPl"></select></label>
-    <label class="f">Result<select id="cRes"><option value="">Makes &amp; misses</option><option value="+">Makes</option><option value="-">Misses</option></select></label>
-    <label class="f">Zone<select id="cZone"><option value="">All zones</option><option>RIM</option><option>PAINT</option><option>N PAINT</option><option value="3">3PT</option></select></label>
-    <label class="f">3 type<select id="cT3"></select></label>
-    <label class="f">Grade<select id="cGrade"></select></label>
-    <div style="display:flex;align-items:flex-end"><button class="bt gry sm" id="cClear" style="width:100%">Clear chart filters</button></div>
-   </div>
-   <div id="zoneTbl" style="margin-top:8px"></div>
-  </div>
- </div>
+ <div id="sheetChart"></div>
  <div id="logWrap"><div class="sec">Event log <span class="faint">(click a row to jump there<span class="code-only"> · × to delete</span>)</span></div><div id="log" class="mono log"></div></div>
  </div>
 </div>
@@ -552,6 +572,7 @@ const evLabel=e=>e.k==='stat'?e.stat:e.k==='ft'?`${e.make?'+':'-'} FT`:e.k==='sh
 // Which practices the stat sheet and clip list are showing right now.
 const byDate=(a,b)=>(a.date||'').localeCompare(b.date||'')||a.created.localeCompare(b.created);
 function viewSessions(){
+ if(tab==='players')return playerScope();
  if(tab==='practices')return[...selected].map(getSess).filter(Boolean).sort(byDate);
  if(tab==='review')return(reviewSet||[S]).map(s=>getSess(s.id)||s).sort(byDate);
  return[S]}
@@ -682,7 +703,7 @@ function markActiveCell(){const k=cellKey(filters());document.querySelectorAll('
 $('statsBlk').addEventListener('click',e=>{
  const lg=e.target.closest('#log [data-del]');if(lg){del(+lg.dataset.del);return}
  const row=e.target.closest('#log [data-t]');if(row){const s=viewSessions()[0];jumpTo(s,+row.dataset.t-num('padPre',4));return}
- const pn=e.target.closest('td[data-chart]');if(pn){const p=pn.dataset.chart;$('cPl').value=$('cPl').value===p?'':p;render();$('chart').scrollIntoView({behavior:'smooth',block:'nearest'});return}
+ const pn=e.target.closest('td[data-chart]');if(pn){const p=pn.dataset.chart;sheetChart.setPlayer(sheetChart.player()===p?'':p);render();$('sheetChart').scrollIntoView({behavior:'smooth',block:'nearest'});return}
  const td=e.target.closest('td.cl');if(!td)return;
  if(tab==='practices'){reviewSet=viewSessions();setTab('review')}
  setFilters({mode:'poss',...JSON.parse(td.dataset.f)});renderClips();
@@ -691,13 +712,14 @@ $('statsBlk').addEventListener('click',e=>{
 
 // ---------- Tabs ----------
 function setTab(t){tab=t;document.body.dataset.tab=t;
- ['Practices','Code','Review'].forEach(n=>$('tab'+n).classList.toggle('on',t===n.toLowerCase()));
+ ['Practices','Code','Review','Players'].forEach(n=>$('tab'+n).classList.toggle('on',t===n.toLowerCase()));
  if(t!=='code'&&shotOpen())closeShot();
  if(t==='practices'){$('practicesView').appendChild($('statsBlk'));stopQueue();src.pause();renderPractices()}
+ else if(t==='players'){stopQueue();src.pause()}
  else if(t==='review'){$('rightCol').appendChild($('statsBlk'));if(!reviewSet)reviewSet=[S];const VS=viewSessions();if(!VS.some(isLoaded)&&VS[0])openSessionVideo(VS[0],null,false)}
  else{$('main').after($('statsBlk'));reviewSet=null;stopQueue();if(!isLoaded(S))openSessionVideo(S,null,false);drawAll()}
  LS.set('tab',t);render()}
-$('tabPractices').onclick=()=>setTab('practices');$('tabCode').onclick=()=>setTab('code');$('tabReview').onclick=()=>{if(tab!=='review'&&tab!=='practices')reviewSet=null;else if(tab==='practices'&&selected.size)reviewSet=viewSessions();setTab('review')};
+$('tabPractices').onclick=()=>setTab('practices');$('tabPlayers').onclick=()=>setTab('players');$('tabCode').onclick=()=>setTab('code');$('tabReview').onclick=()=>{if(tab!=='review'&&tab!=='practices')reviewSet=null;else if(tab==='practices'&&selected.size)reviewSet=viewSessions();setTab('review')};
 function openForCoding(s){if(S.id!==s.id){save();S=s;player=null}LS.set('current',S.id);setTab('code');st(`Coding ${practiceLabel(S)}`)}
 
 // ---------- Practices tab ----------
@@ -794,7 +816,7 @@ const ACTIONS={...VIDEO_ACTIONS,p:flipPoss,g:()=>startPoss('GOLD'),h:()=>startPo
 STATS.forEach(([code,,k])=>ACTIONS[k]=()=>stat(code));
 const FLASH_ID={' ':'space','=':'+','-':'x','[':'clip',']':'clip'};
 document.addEventListener('keydown',e=>{
- if(document.querySelector('dialog[open]')||tab==='practices')return;
+ if(document.querySelector('dialog[open]')||tab==='practices'||tab==='players')return;
  const tg=e.target,tag=tg.tagName,k=e.key;
  if(tag==='TEXTAREA'||tg.isContentEditable||(tag==='INPUT'&&!['checkbox','radio','button','file'].includes(tg.type)))return;
  const coding=tab==='code';
@@ -883,7 +905,7 @@ async function pushCloud(s,keepalive){delete cloudTimers[s.id];if(!cloud||!lib.h
   cloudState('saved '+new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}),'ok')}
  catch(err){cloudState('saved (practice only)','ok');
   if(!tablesWarned){tablesWarned=true;st(`Practice saved to cloud, but possession/event rows failed — re-run the setup SQL in the Cloud dialog. (${err.message})`)}}
- if(tab==='practices')renderPractices()}
+ if(tab==='practices')renderPractices();if(tab==='players')renderPlayers()}
 window.addEventListener('pagehide',()=>Object.keys(cloudTimers).forEach(id=>{clearTimeout(cloudTimers[id]);const s=getSess(id);if(s)pushCloud(s,true)}));
 // Pull every practice from the cloud into the Practices list; the newer copy wins.
 async function refreshCloud(loud){if(!cloud)return;
@@ -892,7 +914,7 @@ async function refreshCloud(loud){if(!cloud)return;
    if(cur&&(cur.s.updated||'')>=(d.updated||''))libPut(cur.s,{cloud:true});
    else if(S.id===r.id&&tab==='code')libPut(S,{cloud:true});
    else{libPut(d,{cloud:true});if(S.id===r.id)S=d}});
-  if(loud)st(`Cloud: ${rows.length} practice${rows.length===1?'':'s'}`);if(tab==='practices')renderPractices()}
+  if(loud)st(`Cloud: ${rows.length} practice${rows.length===1?'':'s'}`);if(tab==='practices')renderPractices();if(tab==='players')renderPlayers()}
  catch(err){cloudState('error','err');st('Cloud refresh failed — '+err.message)}}
 $('cloudBtn').onclick=()=>{$('cUrl').value=cloud?cloud.url:'';$('cKey').value=cloud?cloud.key:'';$('cMsg').textContent=cloud?'Connected':'';$('cloudDlg').showModal()};
 $('cClose').onclick=()=>$('cloudDlg').close();
@@ -903,9 +925,9 @@ $('cConnect').onclick=async()=>{const cfg={url:$('cUrl').value.trim(),key:$('cKe
   await refreshCloud();
   const up=[...lib.values()].filter(x=>!x.cloud).map(x=>x.s);for(const s of up)await pushCloud(s);
   $('cMsg').textContent=`Connected${up.length?` · uploaded ${up.length} practice${up.length===1?'':'s'} from this browser`:''} — practices are in the Practices tab`;
-  if(tab==='practices')renderPractices()}
+  if(tab==='practices')renderPractices();if(tab==='players')renderPlayers()}
  catch(err){$('cMsg').textContent=`Couldn't connect: ${err.message}${/42P01|does not exist|PGRST205/.test(err.message)?' — run the setup SQL below first':''}`}};
-$('cOff').onclick=()=>{cloud=null;LS.del('cloud');cloudState('off');[...lib.values()].forEach(x=>x.cloud=false);$('cMsg').textContent='Disconnected (practices stay in the cloud)';if(tab==='practices')renderPractices()};
+$('cOff').onclick=()=>{cloud=null;LS.del('cloud');cloudState('off');[...lib.values()].forEach(x=>x.cloud=false);$('cMsg').textContent='Disconnected (practices stay in the cloud)';if(tab==='practices')renderPractices();if(tab==='players')renderPlayers()};
 $('cCopy').onclick=()=>{navigator.clipboard.writeText($('sql').textContent).then(()=>$('cMsg').textContent='SQL copied',()=>{})};
 
 // ---------- Stat sheet tables ----------
@@ -926,43 +948,101 @@ function render(){
  const ps=ROSTER.filter(p=>ev.some(e=>e.p===p));
  $('box').innerHTML=ps.length?`<table class="st"><tr><th style="text-align:left">Player</th>${multi?'<th title="Practices with a stat">Prac</th>':''}<th>Pts</th><th>FG</th><th>3P</th><th>FT</th><th>REB</th>${STATS.map(s=>`<th title="${esc(s[1])}">${esc(s[0])}</th>`).join('')}</tr>${ps.map(p=>{const E=ev.filter(e=>e.p===p),S2=E.filter(e=>e.k==='shot'),S3=S2.filter(e=>e.zone==='3'),F=E.filter(e=>e.k==='ft'),c=s=>E.filter(e=>e.stat===s).length,PT=E.reduce((a,e)=>a+pts(e),0);
   const np=VS.filter(s=>codedEvents(s).some(e=>e.p===p)).length;
-  return `<tr><td class="cl pname${$('cPl').value===p?' on':''}" style="text-align:left" data-chart="${esc(p)}" title="Show ${esc(p)}'s shot chart">${esc(p)}</td>${multi?`<td>${np}</td>`:''}${cell(PT,{pl:p,tag:'Scoring'})}${cell(S2.length,{pl:p,tag:'Shot'},f(S2))}${cell(S3.length,{pl:p,tag:'3PT'},f(S3))}${cell(F.length,{pl:p,tag:'FT'},f(F))}${cell(c('OREB')+c('DREB'),{pl:p,tag:'REB'})}${STATS.map(s=>cell(c(s[0]),{pl:p,tag:s[0]})).join('')}</tr>`}).join('')}</table>`:'<span class="faint">No player events yet</span>';
+  return `<tr><td class="cl pname${sheetChart.player()===p?' on':''}" style="text-align:left" data-chart="${esc(p)}" title="Show ${esc(p)}'s shot chart">${esc(p)}</td>${multi?`<td>${np}</td>`:''}${cell(PT,{pl:p,tag:'Scoring'})}${cell(S2.length,{pl:p,tag:'Shot'},f(S2))}${cell(S3.length,{pl:p,tag:'3PT'},f(S3))}${cell(F.length,{pl:p,tag:'FT'},f(F))}${cell(c('OREB')+c('DREB'),{pl:p,tag:'REB'})}${STATS.map(s=>cell(c(s[0]),{pl:p,tag:s[0]})).join('')}</tr>`}).join('')}</table>`:'<span class="faint">No player events yet</span>';
  $('logWrap').classList.toggle('hidden',VS.length!==1);
  if(VS.length===1){const s=VS[0],L=[...s.events].sort((a,b)=>b.t-a.t||b.id-a.id),canDel=tab==='code';
   $('log').innerHTML=L.length?L.map(e=>{const col=(e.k==='shot'||e.k==='ft')?(e.make?'var(--good)':'var(--bad)'):e.k==='poss'?(e.team==='GOLD'?'var(--gold-text)':'var(--link)'):'var(--text)';
    const who=e.k==='stat'||e.k==='shot'||e.k==='ft'?` · ${esc(e.p)}`:'';
    return `<div data-t="${e.t}"><span class="faint" style="width:56px">${fmt(e.t)}</span><span style="color:${col};flex:1">${e.k==='poss'||e.k==='end'?'— '+esc(evLabel(e))+' —':esc(evLabel(e))}${who}${e.grade?' · '+esc(e.grade):''}</span>${canDel?`<button class="x" data-del="${e.id}" title="Delete">×</button>`:''}</div>`}).join(''):'<span class="faint">No events yet</span>'}
- renderChart(VS);renderTimeline();renderClips();renderName();lastT=-1}
+ sheetChart.update(shotsIn(VS),{multi:VS.length});if(tab==='players')renderPlayers();renderTimeline();renderClips();renderName();lastT=-1}
 
-// ---------- Shot chart: every shot in the practices in view ----------
-$('chartCourt').innerHTML=[...$('court').children].filter(n=>n.id!=='dots'&&n.id!=='pin').map(n=>n.outerHTML).join('');
-$('cPl').innerHTML='<option value="">All players</option>'+ROSTER.map(p=>`<option>${esc(p)}</option>`).join('');
-$('cT3').innerHTML='<option value="">All 3 types</option>'+T3.map(x=>`<option>${esc(x)}</option>`).join('');
-$('cGrade').innerHTML='<option value="">All grades</option>'+GRADES.map(x=>`<option>${esc(x)}</option>`).join('');
-const chartF=()=>({pl:$('cPl').value,res:$('cRes').value,zone:$('cZone').value,t3:$('cT3').value,grade:$('cGrade').value});
+// ---------- Shot chart component (stat sheet + player profiles) ----------
+const COURT=[...$('court').children].filter(n=>n.id!=='dots'&&n.id!=='pin').map(n=>n.outerHTML).join('');
 const pct=(m,a)=>a?Math.round(m/a*100)+'%':'–';
-function renderChart(VS){const F=chartF(),multi=VS.length>1;
- const all=VS.flatMap(s=>s.events.filter(e=>e.k==='shot').map(e=>({s,e})));
- // The zone table only follows player + grade, so it keeps showing the whole split while dots narrow down.
- const base=all.filter(({e})=>(!F.pl||e.p===F.pl)&&(!F.grade||e.grade===F.grade));
- const shown=base.filter(({e})=>(!F.res||(F.res==='+')===!!e.make)&&(!F.zone||e.zone===F.zone)&&(!F.t3||e.label===F.t3));
- $('chartDots').innerHTML=shown.filter(x=>x.e.x!=null).map(({s,e})=>`<circle cx="${e.x}" cy="${e.y}" r="7" fill="${e.make?'#2e9e3a':'#d63b1f'}" fill-opacity=".85" stroke="#fff" stroke-width="1.5" data-sid="${esc(s.id)}" data-t="${e.t}"><title>${esc(e.p)} · ${e.make?'Make':'Miss'} ${esc(e.label)}${e.grade?' · '+esc(e.grade):''}\n${esc(practiceLabel(s))} @ ${fmt(e.t)} — click to watch</title></circle>`).join('');
- const mk=shown.filter(x=>x.e.make).length,noSpot=shown.filter(x=>x.e.x==null).length;
- $('chartLegend').textContent=`${F.pl||'All players'}: ${mk}-${shown.length} (${pct(mk,shown.length)})${multi?` across ${VS.length} practices`:''}${noSpot?` · ${noSpot} logged without a spot (counted, not drawn)`:''}`;
- const row=(label,arr,z,t3,indent)=>{const m=arr.filter(x=>x.e.make).length,a=arr.length,on=(z||t3)&&F.zone===z&&F.t3===t3;
-  return `<tr class="zr${on?' on':''}" data-z="${esc(z)}" data-t3="${esc(t3)}"><td style="text-align:left${indent?';padding-left:18px':''}">${label}</td><td>${m}-${a}</td><td>${pct(m,a)}</td><td>${pct(a,base.length)}</td></tr>`};
- const zs=n=>base.filter(x=>x.e.zone===n),threes=zs('3');
- $('zoneTbl').innerHTML=base.length?`<table class="st"><tr><th style="text-align:left">Zone</th><th>FG</th><th>FG%</th><th>Share</th></tr>`+
-  row('<b>All shots</b>',base,'','')+row('Rim',zs('RIM'),'RIM','')+row('Paint',zs('PAINT'),'PAINT','')+row('Non-paint 2',zs('N PAINT'),'N PAINT','')+row('3PT',threes,'3','')+
-  T3.filter(t=>threes.some(x=>x.e.label===t)).map(t=>row(esc(t),threes.filter(x=>x.e.label===t),'3',t,true)).join('')+'</table>'
-  :`<span class="faint">No shots${F.pl?' for '+esc(F.pl):''} in ${multi?'these practices':'this practice'} yet.</span>`}
-['cPl','cRes','cZone','cT3','cGrade'].forEach(i=>$(i).addEventListener('change',()=>{if(i==='cT3'&&$('cT3').value)$('cZone').value='3';if(i==='cZone'&&$('cZone').value!=='3')$('cT3').value='';$(i).blur();render()}));
-$('cClear').onclick=()=>{['cPl','cRes','cZone','cT3','cGrade'].forEach(i=>$(i).value='');render()};
-$('zoneTbl').addEventListener('click',e=>{const r=e.target.closest('tr.zr');if(!r)return;const z=r.dataset.z,t3=r.dataset.t3,same=$('cZone').value===z&&$('cT3').value===t3;
- $('cZone').value=same?'':z;$('cT3').value=same?'':t3;render()});
-$('chartDots').addEventListener('click',e=>{const d=e.target.closest('circle[data-sid]');if(!d)return;const s=getSess(d.dataset.sid);if(!s)return;
- if(tab==='practices'){reviewSet=viewSessions();setTab('review')}
- jumpTo(s,+d.dataset.t-num('padPre',4));$('videoBlk').scrollIntoView({behavior:'smooth',block:'start'})});
+const shotsIn=VS=>VS.flatMap(s=>s.events.filter(e=>e.k==='shot').map(e=>({s,e})));
+// Clicking a dot plays that shot; from a tab without video, open Review on the practices in view first.
+function watchShot(s,t){if(tab==='practices'||tab==='players'){reviewSet=viewSessions();setTab('review')}
+ jumpTo(s,t-num('padPre',4));$('videoBlk').scrollIntoView({behavior:'smooth',block:'start'})}
+function makeChart(root,{pickPlayer,onPlayer}){
+ const opts=a=>a.map(x=>`<option>${esc(x)}</option>`).join('');
+ root.innerHTML=`<div class="chartgrid"><div><svg viewBox="0 0 500 470" width="100%" style="display:block;background:#e9c894;border:2px solid #111" role="img" aria-label="Shot chart"><g>${COURT}</g><g class="cdots"></g></svg><div class="clegend muted" style="font-size:11px;margin-top:4px"></div></div>
+  <div><div class="cfil">${pickPlayer?`<label class="f">Player<select data-c="pl"><option value="">All players</option>${opts(ROSTER)}</select></label>`:''}
+   <label class="f">Result<select data-c="res"><option value="">Makes &amp; misses</option><option value="+">Makes</option><option value="-">Misses</option></select></label>
+   <label class="f">Zone<select data-c="zone"><option value="">All zones</option><option>RIM</option><option>PAINT</option><option>N PAINT</option><option value="3">3PT</option></select></label>
+   <label class="f">3 type<select data-c="t3"><option value="">All 3 types</option>${opts(T3)}</select></label>
+   <label class="f">Grade<select data-c="grade"><option value="">All grades</option>${opts(GRADES)}</select></label>
+   <div style="display:flex;align-items:flex-end"><button class="bt gry sm" data-c="clear" style="width:100%">Clear chart filters</button></div></div>
+   <div class="ztbl" style="margin-top:8px"></div></div></div>`;
+ const sel=n=>root.querySelector(`[data-c="${n}"]`);
+ let data={shots:[],multi:1,who:''};
+ const F=()=>({pl:pickPlayer?sel('pl').value:'',res:sel('res').value,zone:sel('zone').value,t3:sel('t3').value,grade:sel('grade').value});
+ function draw(){const f=F(),who=f.pl||data.who||'All players',multi=data.multi>1;
+  // The zone table only follows player + grade, so it keeps showing the whole split while the dots narrow down.
+  const base=data.shots.filter(({e})=>(!f.pl||e.p===f.pl)&&(!f.grade||e.grade===f.grade));
+  const shown=base.filter(({e})=>(!f.res||(f.res==='+')===!!e.make)&&(!f.zone||e.zone===f.zone)&&(!f.t3||e.label===f.t3));
+  root.querySelector('.cdots').innerHTML=shown.filter(x=>x.e.x!=null).map(({s,e})=>`<circle cx="${e.x}" cy="${e.y}" r="7" fill="${e.make?'#2e9e3a':'#d63b1f'}" fill-opacity=".85" stroke="#fff" stroke-width="1.5" data-sid="${esc(s.id)}" data-t="${e.t}"><title>${esc(e.p)} · ${e.make?'Make':'Miss'} ${esc(e.label)}${e.grade?' · '+esc(e.grade):''}\n${esc(practiceLabel(s))} @ ${fmt(e.t)} — click to watch</title></circle>`).join('');
+  const mk=shown.filter(x=>x.e.make).length,noSpot=shown.filter(x=>x.e.x==null).length;
+  root.querySelector('.clegend').textContent=`${who}: ${mk}-${shown.length} (${pct(mk,shown.length)})${multi?` across ${data.multi} practices`:''}${noSpot?` · ${noSpot} logged without a spot (counted, not drawn)`:''}`;
+  const row=(label,arr,z,t3,indent)=>{const m=arr.filter(x=>x.e.make).length,a=arr.length,on=(z||t3)&&f.zone===z&&f.t3===t3;
+   return `<tr class="zr${on?' on':''}" data-z="${esc(z)}" data-t3="${esc(t3)}"><td style="text-align:left${indent?';padding-left:18px':''}">${label}</td><td>${m}-${a}</td><td>${pct(m,a)}</td><td>${pct(a,base.length)}</td></tr>`};
+  const zs=n=>base.filter(x=>x.e.zone===n),threes=zs('3');
+  root.querySelector('.ztbl').innerHTML=base.length?`<table class="st"><tr><th style="text-align:left">Zone</th><th>FG</th><th>FG%</th><th>Share</th></tr>`+
+   row('<b>All shots</b>',base,'','')+row('Rim',zs('RIM'),'RIM','')+row('Paint',zs('PAINT'),'PAINT','')+row('Non-paint 2',zs('N PAINT'),'N PAINT','')+row('3PT',threes,'3','')+
+   T3.filter(t=>threes.some(x=>x.e.label===t)).map(t=>row(esc(t),threes.filter(x=>x.e.label===t),'3',t,true)).join('')+'</table>'
+   :`<span class="faint">No shots${f.pl?' for '+esc(f.pl):''} in ${multi?'these practices':'this practice'} yet.</span>`}
+ root.addEventListener('change',e=>{const c=e.target.dataset.c;if(!c)return;
+  if(c==='t3'&&sel('t3').value)sel('zone').value='3';if(c==='zone'&&sel('zone').value!=='3')sel('t3').value='';
+  e.target.blur();c==='pl'&&onPlayer?onPlayer():draw()});
+ root.addEventListener('click',e=>{
+  if(e.target.closest('[data-c="clear"]')){['pl','res','zone','t3','grade'].forEach(n=>{if(sel(n))sel(n).value=''});pickPlayer&&onPlayer?onPlayer():draw();return}
+  const r=e.target.closest('tr.zr');if(r){const z=r.dataset.z,t3=r.dataset.t3,same=sel('zone').value===z&&sel('t3').value===t3;sel('zone').value=same?'':z;sel('t3').value=same?'':t3;draw();return}
+  const d=e.target.closest('circle[data-sid]');if(d){const s=getSess(d.dataset.sid);if(s)watchShot(s,+d.dataset.t)}});
+ return{update(shots,info){data={shots,multi:1,who:'',...info};draw()},player:()=>pickPlayer?sel('pl').value:'',setPlayer(p){if(pickPlayer)sel('pl').value=p}}}
+const sheetChart=makeChart($('sheetChart'),{pickPlayer:true,onPlayer:()=>render()});
+const profChart=makeChart($('profChart'),{pickPlayer:false});
+
+// ---------- Players tab: every stat for one player across all practices ----------
+let profP=LS.get('profilePlayer')||ROSTER[0];
+function playerScope(){const from=$('ppFrom').value,to=$('ppTo').value;
+ return[...lib.values()].map(x=>getSess(x.s.id)).filter(s=>s&&(!from||(s.date||'')>=from)&&(!to||(s.date||'')<=to)).sort(byDate)}
+function statLine(E){const S2=E.filter(e=>e.k==='shot'),S3=S2.filter(e=>e.zone==='3'),F=E.filter(e=>e.k==='ft'),mk=a=>a.filter(e=>e.make).length,c=s=>E.filter(e=>e.stat===s).length;
+ return{S2,S3,F,fgm:mk(S2),fga:S2.length,tpm:mk(S3),tpa:S3.length,ftm:mk(F),fta:F.length,pts:E.reduce((a,e)=>a+pts(e),0),c,reb:c('OREB')+c('DREB')}}
+function renderPlayers(){
+ const scope=playerScope(),from=$('ppFrom').value,to=$('ppTo').value;
+ $('ppScope').textContent=`${scope.length} practice${scope.length===1?'':'s'}${from||to?' in range':''} · ${cloud?'this browser + cloud':'this browser only — connect ☁ Cloud for the whole staff\'s practices'}`;
+ $('ppList').innerHTML=ROSTER.map(p=>{const n=scope.filter(s=>codedEvents(s).some(e=>e.p===p)).length;
+  return `<button class="bt ${p===profP?'blk-bg':'gry'}" data-pp="${esc(p)}">${esc(p)}<small>${n} practice${n===1?'':'s'}</small></button>`}).join('');
+ const mine=scope.map(s=>({s,E:codedEvents(s).filter(e=>e.p===profP)})).filter(x=>x.E.length),E=mine.flatMap(x=>x.E),np=mine.length;
+ $('profEmpty').classList.toggle('hidden',!!E.length);$('profBody').classList.toggle('hidden',!E.length);
+ if(!E.length){$('profEmpty').textContent=`No stats for ${profP} in ${scope.length?`these ${scope.length} practices`:'any practice yet'}.`;return}
+ const L=statLine(E),per=n=>(n/np).toFixed(1),poss=mine.reduce((a,{s})=>a+possessions(s).filter(P=>possEvents(s,P).some(e=>e.p===profP)).length,0);
+ const efg=L.fga?Math.round((L.fgm+0.5*L.tpm)/L.fga*100)+'%':'–',ato=L.c('TO')?(L.c('AST')/L.c('TO')).toFixed(1):L.c('AST')?'∞':'–';
+ $('profHead').innerHTML=`<div class="phead"><b>${esc(profP)}</b><span class="muted">${np} practice${np===1?'':'s'} with stats · ${prettyDate(mine[0].s.date)}${np>1?' – '+prettyDate(mine.at(-1).s.date):''} · in ${poss} coded possession${poss===1?'':'s'}</span></div>
+  <div class="tiles">${[['Points',L.pts,`${per(L.pts)} per practice`],['FG',`${L.fgm}-${L.fga}`,pct(L.fgm,L.fga)],['3PT',`${L.tpm}-${L.tpa}`,pct(L.tpm,L.tpa)],['FT',`${L.ftm}-${L.fta}`,pct(L.ftm,L.fta)],['eFG%',efg,'(FGM + ½·3PM) / FGA'],
+   ['Rebounds',L.reb,`${L.c('OREB')} off · ${L.c('DREB')} def`],['Assists',L.c('AST'),`AST/TO ${ato}`],['Turnovers',L.c('TO'),`${per(L.c('TO'))} per practice`],['Stocks',L.c('STL')+L.c('BLK'),`${L.c('STL')} stl · ${L.c('BLK')} blk`]]
+   .map(([l,v,s])=>`<div class="tile"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join('')}</div>`;
+ const T=F=>({pl:profP,...F});
+ const cols=[['Pts',L.pts,{tag:'Scoring'},per(L.pts)],['FG',`${L.fgm}-${L.fga}`,{tag:'Shot'},`${per(L.fgm)}-${per(L.fga)}`,L.fga],['FG%',null,null,pct(L.fgm,L.fga)],
+  ['3P',`${L.tpm}-${L.tpa}`,{tag:'3PT'},`${per(L.tpm)}-${per(L.tpa)}`,L.tpa],['3P%',null,null,pct(L.tpm,L.tpa)],['FT',`${L.ftm}-${L.fta}`,{tag:'FT'},`${per(L.ftm)}-${per(L.fta)}`,L.fta],['FT%',null,null,pct(L.ftm,L.fta)],
+  ['REB',L.reb,{tag:'REB'},per(L.reb)],...STATS.map(s=>[s[0],L.c(s[0]),{tag:s[0]},per(L.c(s[0]))])];
+ $('profTotals').innerHTML=`<table class="st"><tr><th></th>${cols.map(c=>`<th title="${esc(STAT_NAME[c[0]]||c[0])}">${esc(c[0])}</th>`).join('')}</tr>
+  <tr><td style="text-align:left" class="muted">Total</td>${cols.map(([,v,F,,n])=>F?cell(n??v,T(F),typeof v==='string'?v:undefined):`<td>${v??''}</td>`).map((x,i)=>cols[i][2]?x:`<td>${cols[i][3]}</td>`).join('')}</tr>
+  <tr><td style="text-align:left" class="muted">Per practice</td>${cols.map(c=>`<td class="muted">${c[2]&&c[1]!==0?c[3]:''}</td>`).join('')}</tr></table>`;
+ profChart.update(shotsIn(mine.map(x=>x.s)).filter(x=>x.e.p===profP),{multi:np,who:profP});
+ const G=g=>L.S2.filter(e=>(e.grade||'')===g),grow=(label,arr,F)=>{const m=arr.filter(e=>e.make).length;return `<tr><td style="text-align:left">${label}</td>${F?cell(arr.length,T(F),`${m}-${arr.length}`):`<td>${m}-${arr.length}</td>`}<td>${pct(m,arr.length)}</td><td>${pct(arr.length,L.fga)}</td></tr>`};
+ $('profGrades').innerHTML=`<table class="st"><tr><th style="text-align:left">Grade</th><th>FG</th><th>FG%</th><th>Share</th></tr>${GRADES.map(g=>grow(esc(g),G(g),{tag:g})).join('')}${grow('<span class="faint">Not graded</span>',G(''),null)}</table>`;
+ const fm=L.F.filter(e=>e.make).length;
+ $('profFT').innerHTML=`<table class="st"><tr><th style="text-align:left">Free throws</th><th>FT</th><th>FT%</th><th>Per practice</th></tr><tr><td style="text-align:left">All</td>${cell(L.fta,T({tag:'FT'}),`${fm}-${L.fta}`)}<td>${pct(fm,L.fta)}</td><td>${per(fm)}-${per(L.fta)}</td></tr></table>`;
+ const lc=[['Pts',l=>l.pts,{tag:'Scoring'}],['FG',l=>`${l.fgm}-${l.fga}`,{tag:'Shot'},l=>l.fga],['3P',l=>`${l.tpm}-${l.tpa}`,{tag:'3PT'},l=>l.tpa],['FT',l=>`${l.ftm}-${l.fta}`,{tag:'FT'},l=>l.fta],['REB',l=>l.reb,{tag:'REB'}],...STATS.map(s=>[s[0],l=>l.c(s[0]),{tag:s[0]}])];
+ $('profLog').innerHTML=`<table class="st"><tr><th style="text-align:left">Date</th><th style="text-align:left">Practice</th>${lc.map(c=>`<th>${esc(c[0])}</th>`).join('')}</tr>${[...mine].reverse().map(({s,E})=>{const l=statLine(E);
+  return `<tr data-sid="${esc(s.id)}"><td style="text-align:left">${esc(prettyDate(s.date))}</td><td style="text-align:left">${esc(s.name||'Untitled')}</td>${lc.map(([,get,F,n])=>{const v=get(l);return cell(n?n(l):v,T(F),typeof v==='string'?v:undefined)}).join('')}</tr>`}).join('')}</table>`}
+$('playersView').addEventListener('click',e=>{
+ const b=e.target.closest('[data-pp]');if(b){profP=b.dataset.pp;LS.set('profilePlayer',profP);renderPlayers();return}
+ const td=e.target.closest('td.cl[data-f]');if(!td)return;
+ const tr=td.closest('tr[data-sid]');reviewSet=tr?[getSess(tr.dataset.sid)]:playerScope().filter(s=>codedEvents(s).some(e=>e.p===profP));setTab('review');
+ setFilters({mode:'poss',...JSON.parse(td.dataset.f)});renderClips();const L=clipList();if(L.length){playQueue(L,0,false);$('videoBlk').scrollIntoView({behavior:'smooth',block:'start'})}});
+['ppFrom','ppTo'].forEach(i=>$(i).addEventListener('change',()=>{$(i).blur();renderPlayers()}));
+$('ppAllTime').onclick=()=>{$('ppFrom').value='';$('ppTo').value='';renderPlayers()};
 function drawAll(){drawPlayers();drawLineups();fillShooter();render()}
 
 // ---------- Boot ----------
@@ -971,7 +1051,7 @@ loadLocalLib();
 fillFilters();
 if(cloud){cloudState('on','ok');refreshCloud()}
 const savedTab=LS.get('tab');
-setTab(savedTab==='practices'||(!lib.size&&savedTab!=='code')?'practices':'code');
+setTab(savedTab==='players'&&lib.size?'players':savedTab==='practices'||(!lib.size&&savedTab!=='code')?'practices':'code');
 setInterval(tick,50);
 </script>
 </body>

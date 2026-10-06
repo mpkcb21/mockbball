@@ -27,6 +27,15 @@ Notes on video sources:
 - **YouTube:** for live streams, turn on DVR in the stream settings so you can scrub back. The stream must be Public or Unlisted.
 - **Local files** never leave your computer. Reviewing a file-based practice needs that file loaded in this visit; the app tells you which file to load.
 
+## Players tab
+
+A profile for each player built from every practice the app knows about: this browser, plus the cloud when it's connected. Use the date range to look at a stretch (e.g. the last two weeks), or *All time*.
+
+- **Headline tiles:** points, FG, 3PT, FT, eFG%, rebounds, assists (with AST/TO), turnovers, steals + blocks.
+- **Totals and per-practice averages** for every stat in the app. Click a total to watch every possession behind it.
+- **All-time shot chart and splits:** zone table (rim, paint, non-paint 2, 3PT and each 3 type), shot-grade table, and free throws. Click a dot to watch that shot, or click a zone row to filter the chart.
+- **Practice log:** one row per practice. Click any number to watch it from that practice only.
+
 ## How clipping works
 
 Press **P** (or GOLD / BLUE POSSESSION) when a possession starts. That marks the start of a new clip and ends the previous one. **Z** ends a clip without starting a new one (dead ball, water break). Every stat is stamped with the video time and lands in whichever possession it falls inside.
