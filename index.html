@@ -119,6 +119,8 @@ dialog{border:2px solid var(--edge);border-radius:8px;padding:14px;max-width:680
 dialog::backdrop{background:rgba(0,0,0,.5)}
 dialog pre{background:var(--pre);border:1px solid var(--line);padding:8px;font-size:11px;overflow:auto;white-space:pre;color:var(--text);max-height:320px}
 .sec{font-size:12px;color:var(--muted);margin:8px 0 4px}
+.pos{color:var(--good)}.neg{color:var(--bad)}
+.st td.pos,.st td .pos{font-weight:600}
 /* player profiles */
 #ppList .bt{height:46px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .phead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:4px}
@@ -269,6 +271,7 @@ body[data-tab=review] .chartgrid{grid-template-columns:minmax(0,1fr) minmax(0,1f
    <label class="f">Team<select id="fTeam"><option value="">All</option><option>GOLD</option><option>BLUE</option></select></label>
    <label class="f">Player<select id="fPlayer"></select></label>
    <label class="f">Contains<select id="fTag"></select></label>
+   <label class="f" id="fOnWrap">On floor<select id="fOn"></select></label>
    <label class="f" id="fOutWrap">Outcome<select id="fOut"><option value="">Any</option><option value="score">Scored</option><option value="empty">Empty</option><option value="to">Turnover</option></select></label>
    <label class="f">Poss lead-in (s)<input type="number" id="padPoss" min="0" max="10" step="0.5" value="1"></label>
    <label class="f">Event pre (s)<input type="number" id="padPre" min="0" max="30" step="0.5" value="4"></label>
@@ -329,6 +332,14 @@ body[data-tab=review] .chartgrid{grid-template-columns:minmax(0,1fr) minmax(0,1f
  <div class="sec">Player box</div><div id="box" style="overflow-x:auto"></div>
  <div class="sec">Shot chart <span class="faint">(click a dot to watch that shot · click a player's name above to chart them)</span></div>
  <div id="sheetChart"></div>
+ <details id="comboWrap" style="margin-top:8px"><summary class="sec" style="cursor:pointer">Lineup combinations <span class="faint">(optional) — how groups did together on the floor</span></summary>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:4px 0 6px">
+   <label class="f" style="flex-direction:row;align-items:center;gap:6px">Group size<select id="comboK"><option value="5">5 — full lineups</option><option value="3">3-man</option><option value="2">2-man pairs</option></select></label>
+   <label class="f" style="flex-direction:row;align-items:center;gap:6px">Min possessions<input type="number" id="comboMin" value="1" min="1" style="width:64px"></label>
+   <label class="f" style="flex-direction:row;align-items:center;gap:6px">Team<select id="comboTeam"><option value="">Both</option><option>GOLD</option><option>BLUE</option></select></label>
+  </div>
+  <div id="combos" style="overflow-x:auto"></div>
+ </details>
  <div id="logWrap"><div class="sec">Event log <span class="faint">(click a row to jump there<span class="code-only"> · × to delete</span>)</span></div><div id="log" class="mono log"></div></div>
  </div>
 </div>
@@ -612,6 +623,44 @@ const codedEvents=s=>s.events.filter(e=>e.k==='stat'||e.k==='shot'||e.k==='ft');
 const pts=e=>e.k==='shot'&&e.make?(e.zone==='3'?3:2):e.k==='ft'&&e.make?1:0;
 const possEvents=(s,P)=>codedEvents(s).filter(e=>inPoss(P,e.t)).sort((a,b)=>a.t-b.t);
 const possPts=(P,E)=>E.filter(e=>e.team===P.team).reduce((a,e)=>a+pts(e),0);
+
+// ---------- Who was on the floor: lineups rebuilt from sub events ----------
+// New subs save the full lineup before/after; older ones are undone backwards from the practice's current lineup.
+const cloneL=L=>({GOLD:[...((L&&L.GOLD)||[])],BLUE:[...((L&&L.BLUE)||[])]});
+function undoSub(L,e){const c=cloneL(L),find=id=>{for(const t of['GOLD','BLUE']){const i=c[t].indexOf(id);if(i>-1)return[t,i]}return null};
+ const a=find(e.p),b=find(e.out);if(a&&b){c[a[0]][a[1]]=e.out;c[b[0]][b[1]]=e.p}else if(a)c[a[0]][a[1]]=e.out;return c}
+function lineupFn(s){const byId=s.events.filter(e=>e.k==='sub').sort((a,b)=>a.id-b.id),snap=new Map();let cur=cloneL(s.lineup);
+ for(let k=byId.length-1;k>=0;k--){const e=byId[k],aft=e.after?cloneL(e.after):cur,bef=e.before?cloneL(e.before):undoSub(aft,e);snap.set(e,{bef,aft});cur=bef}
+ const byT=[...byId].sort((a,b)=>a.t-b.t||a.id-b.id),start=byT.length?snap.get(byT[0]).bef:cloneL(s.lineup);
+ return t=>{let L=start;for(const e of byT){if(e.t>t)break;L=snap.get(e).aft}return L}}
+const LINEUP_LAG=2; // a sub logged up to 2s after a possession starts still counts for that possession (coder reaction time)
+const floorCache=new Map();
+function floorData(s){const key=`${s.updated}|${s.events.length}|${isLoaded(s)?Math.round(dur()):0}`,c=floorCache.get(s.id);if(c&&c.key===key)return c.v;
+ const at=lineupFn(s),inP=new Set();
+ const poss=possessions(s).map(P=>{const E=possEvents(s,P),pt={GOLD:0,BLUE:0};E.forEach(e=>{inP.add(e);if(e.team in pt)pt[e.team]+=pts(e)});
+  return{P,pt,L:at(Math.min(P.start+LINEUP_LAG,P.end!=null?(P.start+P.end)/2:Infinity))}});
+ const v={poss,byId:new Map(poss.map(x=>[x.P.id,x])),loose:codedEvents(s).filter(e=>!inP.has(e)&&pts(e)).map(e=>({e,L:at(e.t)}))};
+ floorCache.set(s.id,{key,v});return v}
+const OTHER={GOLD:'BLUE',BLUE:'GOLD'};
+const blankOn=()=>({op:0,dp:0,of:0,da:0,pm:0});
+function addOn(r,P,pt,T){r.pm+=pt[T]-pt[OTHER[T]];if(P.team===T){r.op++;r.of+=pt[T]}else{r.dp++;r.da+=pt[OTHER[T]]}}
+// Per player: on-floor possessions (off/def), points for/against and +/- across the practices in view.
+function onFloorStats(VS){const m=new Map(),get=id=>{if(!m.has(id))m.set(id,blankOn());return m.get(id)};
+ VS.forEach(s=>{const fd=floorData(s);
+  fd.poss.forEach(({P,L,pt})=>['GOLD','BLUE'].forEach(T=>L[T].forEach(id=>{if(id)addOn(get(id),P,pt,T)})));
+  fd.loose.forEach(({e,L})=>['GOLD','BLUE'].forEach(T=>L[T].forEach(id=>{if(id&&e.team in OTHER)get(id).pm+=e.team===T?pts(e):-pts(e)})))});
+ return m}
+const kCombos=(a,k)=>{const out=[],rec=(i,cur)=>{if(cur.length===k){out.push([...cur]);return}for(let j=i;j<a.length;j++){cur.push(a[j]);rec(j+1,cur);cur.pop()}};rec(0,[]);return out};
+function comboStats(VS,k){const m=new Map();
+ VS.forEach(s=>floorData(s).poss.forEach(({P,L,pt})=>['GOLD','BLUE'].forEach(T=>{const ids=L[T].filter(Boolean).sort(rosterOrder);if(ids.length<k)return;
+  kCombos(ids,k).forEach(g=>{const key=T+'|'+g.join(',');if(!m.has(key))m.set(key,{T,g,...blankOn()});addOn(m.get(key),P,pt,T)})})));
+ return[...m.values()].sort((a,b)=>(b.op+b.dp)-(a.op+a.dp)||b.pm-a.pm)}
+// All listed players on the floor together, on the same team (a lineup combination never spans both sides).
+const onFloor=(s,P,ids)=>{const x=floorData(s).byId.get(P.id),a=ids.split(',');return!!x&&['GOLD','BLUE'].some(T=>a.every(id=>x.L[T].includes(id)))};
+const playedIn=(s,id)=>codedEvents(s).some(e=>e.p===id)||floorData(s).poss.some(x=>x.L.GOLD.includes(id)||x.L.BLUE.includes(id));
+const signed=n=>n>0?'+'+n:n<0?'−'+Math.abs(n):'0';
+const ppp=(pts,n)=>n?(pts/n).toFixed(2):'–';
+const netStr=r=>r.op&&r.dp?(()=>{const v=r.of/r.op-r.da/r.dp;return(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(2)})():'–';
 function eventTags(e){
  if(e.k==='stat')return[e.stat,...(e.stat==='OREB'||e.stat==='DREB'?['REB']:[])];
  if(e.k==='ft')return['FT',e.make?'FT make':'FT miss',...(e.make?['Scoring']:[])];
@@ -640,7 +689,7 @@ function mk(p,cls,html,fn){const b=document.createElement('button');b.className=
 function pickPlayer(p){if(!p)return;player=p;drawPlayers();st(`Active player: ${pname(p)} (${teamOf(p)})`)}
 function drawPlayers(){$('players').innerHTML='';['GOLD','BLUE'].forEach(t=>S.lineup[t].forEach((p,i)=>{const k=slotKey(t,i),b=mk($('players'),t==='GOLD'?'gold':'blue',`${esc(pshort(p))}<small>${k}</small>`,()=>pickPlayer(p));b.style.height='44px';b.title=`${pname(p)} — key ${k}`;b.dataset.k='n'+k;if(p===player)b.classList.add('sel')}))}
 function drawLineups(){$('lu').innerHTML='';['GOLD','BLUE'].forEach(t=>S.lineup[t].forEach((p,i)=>{const s=document.createElement('select');s.style.cssText=`height:32px;font-size:12px;border:1px solid #333;border-radius:0;${TEAMCSS[t]}`;s.innerHTML=orderIds([...activeIds(),...S.lineup.GOLD,...S.lineup.BLUE]).map(r=>`<option value="${esc(r)}" ${r===p?'selected':''}>${esc(pname(r))}</option>`).join('');
- s.onchange=()=>{const nw=s.value,old=S.lineup[t][i];['GOLD','BLUE'].forEach(tt=>{const j=S.lineup[tt].indexOf(nw);if(j>-1)S.lineup[tt][j]=old});S.lineup[t][i]=nw;add({k:'sub',p:nw,out:old,team:t});st(`Sub: ${pname(nw)} in for ${pname(old)} (${t})`);drawLineups();drawPlayers();fillShooter();s.blur()};$('lu').appendChild(s)}))}
+ s.onchange=()=>{const nw=s.value,old=S.lineup[t][i],before=cloneL(S.lineup);['GOLD','BLUE'].forEach(tt=>{const j=S.lineup[tt].indexOf(nw);if(j>-1)S.lineup[tt][j]=old});S.lineup[t][i]=nw;add({k:'sub',p:nw,out:old,team:t,before,after:cloneL(S.lineup)});st(`Sub: ${pname(nw)} in for ${pname(old)} (${t})`);drawLineups();drawPlayers();fillShooter();s.blur()};$('lu').appendChild(s)}))}
 function stat(s){if(!player){st('Pick a player first (0–9)');return}add({k:'stat',stat:s,p:player,team:teamOf(player)});st(`${STAT_NAME[s]||s} → ${pname(player)} @ ${fmt(now())}`)}
 STATS.forEach(([code,name,k,side])=>{const b=mk($(side),'gry',`${esc(code)}<small>${k.toUpperCase()}</small>`,()=>stat(code));b.title=`${name} — key ${k.toUpperCase()}`;b.dataset.k=k});
 function ft(m){if(!player){st('Pick a player first (0–9)');return}add({k:'ft',make:m,p:player,team:teamOf(player)});st(`${m?'+':'-'} FT → ${pname(player)} @ ${fmt(now())}`)}
@@ -685,7 +734,7 @@ function jumpTo(s,t){stopQueue();if(openSessionVideo(s,Math.max(0,t),true))st(`J
 
 // ---------- Clips + playlist (across every practice in view) ----------
 const num=(id,d)=>{const x=parseFloat($(id).value);return isFinite(x)&&x>=0?x:d};
-function filters(){return{mode:$('fMode').value,team:$('fTeam').value,pl:$('fPlayer').value,tag:$('fTag').value,out:$('fOut').value}}
+function filters(){return{mode:$('fMode').value,team:$('fTeam').value,pl:$('fPlayer').value,tag:$('fTag').value,out:$('fOut').value,on:$('fOn').value}}
 // An event matches when it is by the filtered player AND carries the filtered tag (same event, not just same possession).
 const evMatch=(e,F)=>(!F.pl||e.p===F.pl)&&(!F.tag||eventTags(e).includes(F.tag));
 function clipList(){
@@ -693,17 +742,17 @@ function clipList(){
  return viewSessions().flatMap(s=>{
   if(F.mode==='poss')return possessions(s).map(P=>{const E=possEvents(s,P);
     return{key:s.id+':p'+P.id,s,P,E,pt:possPts(P,E),team:P.team,start:Math.max(0,P.start-lead),end:P.end??Math.max(P.start+30,(E.at(-1)?.t??0)+5),t:P.start}})
-   .filter(c=>(!F.team||c.team===F.team)&&(!(F.pl||F.tag)||c.E.some(e=>evMatch(e,F)))
+   .filter(c=>(!F.team||c.team===F.team)&&(!F.on||onFloor(s,c.P,F.on))&&(!(F.pl||F.tag)||c.E.some(e=>evMatch(e,F)))
     &&(!F.out||(F.out==='score'?c.pt>0:F.out==='empty'?c.pt===0:c.E.some(e=>e.stat==='TO'))));
   return codedEvents(s).sort((a,b)=>a.t-b.t).filter(e=>(!F.team||e.team===F.team)&&evMatch(e,F))
    .map(e=>({key:s.id+':e'+e.id,s,e,team:e.team,start:Math.max(0,e.t-pre),end:e.t+post,t:e.t}))})}
 function chip(s,e,F){const cls=(e.k==='shot'||e.k==='ft')?(e.make?'mk':'ms'):'',hl=F&&(F.pl||F.tag)&&evMatch(e,F)?' match':'';
  return `<span class="chip ${cls}${hl}" data-sid="${esc(s.id)}" data-seek="${e.t}" title="${esc(pname(e.p))} · jump to ${fmt(e.t)}">${esc(evLabel(e))} ${esc(pshort(e.p))}</span>`}
-function filterSummary(F){const parts=[];if(F.pl)parts.push(pname(F.pl));if(F.team)parts.push(F.team);if(F.tag)parts.push(TAG_NAME[F.tag]||F.tag);
+function filterSummary(F){const parts=[];if(F.on)parts.push(F.on.split(',').map(pname).join(' + ')+' on floor');if(F.pl)parts.push(pname(F.pl));if(F.team)parts.push(F.team);if(F.tag)parts.push(TAG_NAME[F.tag]||F.tag);
  if(F.out)parts.push({score:'scored',empty:'empty',to:'turnover'}[F.out]);return parts.join(' · ')}
 function renderClips(){
  const F=filters(),L=clipList(),playing=queue&&queue[qi]&&queue[qi].key,poss=F.mode==='poss',multi=viewSessions().length>1,canDel=tab==='code';
- $('fOutWrap').style.opacity=poss?1:.4;$('fOut').disabled=!poss;
+ $('fOutWrap').style.opacity=$('fOnWrap').style.opacity=poss?1:.4;$('fOut').disabled=$('fOn').disabled=!poss;
  const unit=poss?'possession':'moment',np=new Set(L.map(c=>c.s.id)).size;
  $('clipCount').textContent=`${L.length} ${unit}${L.length===1?'':'s'}`+(multi?` from ${np} practice${np===1?'':'s'}`:'')+(L.length?` · ${fmt(L.reduce((a,c)=>a+c.end-c.start,0))} total`:'');
  const sum=filterSummary(F);
@@ -734,11 +783,13 @@ function stepClip(d){const L=clipList();if(!L.length)return;
  const hit=d>0?here.find(x=>x.c.start>t+0.05):here.filter(x=>x.c.start<t-1.5).at(-1);
  if(!hit){st(d>0?'No later clip':'No earlier clip');return}playQueue(L,hit.i,true)}
 $('prevClip').onclick=()=>stepClip(-1);$('nextClip').onclick=()=>stepClip(1);
-['fMode','fTeam','fPlayer','fTag','fOut','padPoss','padPre','padPost'].forEach(i=>$(i).addEventListener('change',()=>{stopQueue();renderClips();if($(i).tagName==='SELECT')$(i).blur()}));
-function setFilters(F){$('fMode').value=F.mode||'poss';$('fTeam').value=F.team||'';$('fPlayer').value=F.pl||'';$('fTag').value=F.tag||'';$('fOut').value=F.out||''}
+['fMode','fTeam','fPlayer','fTag','fOut','fOn','padPoss','padPre','padPost'].forEach(i=>$(i).addEventListener('change',()=>{stopQueue();renderClips();if($(i).tagName==='SELECT')$(i).blur()}));
+function setFilters(F){if(F.on&&![...$('fOn').options].some(o=>o.value===F.on))$('fOn').insertAdjacentHTML('beforeend',`<option value="${esc(F.on)}">${esc(F.on.split(',').map(pshort).join(' + '))}</option>`);$('fOn').value=F.on||'';$('fMode').value=F.mode||'poss';$('fTeam').value=F.team||'';$('fPlayer').value=F.pl||'';$('fTag').value=F.tag||'';$('fOut').value=F.out||''}
 $('bannerClear').onclick=()=>{stopQueue();setFilters({mode:$('fMode').value});renderClips()};
 function fillFilters(){
- const keep=(id,html)=>{const s=$(id),o=s.value;s.innerHTML=html;if([...s.options].some(x=>x.value===o))s.value=o};
+ const keep=(id,html)=>{const s=$(id),o=s.value;s.innerHTML=html;if([...s.options].some(x=>x.value===o))s.value=o;
+  else if(id==='fOn'&&o.includes(','))s.insertAdjacentHTML('beforeend',`<option value="${esc(o)}" selected>${esc(o.split(',').map(pshort).join(' + '))}</option>`)};
+ keep('fOn','<option value="">Anyone</option>'+orderIds([...activeIds(),...viewSessions().flatMap(s=>[...s.lineup.GOLD,...s.lineup.BLUE])]).map(p=>`<option value="${esc(p)}">${esc(pname(p))}</option>`).join(''));
  keep('fPlayer','<option value="">All</option>'+orderIds([...activeIds(),...viewSessions().flatMap(s=>codedEvents(s).map(e=>e.p))]).map(p=>`<option value="${esc(p)}">${esc(pname(p))}</option>`).join(''));
  const opt=a=>a.map(x=>`<option value="${esc(x[0])}">${esc(x[1])}</option>`).join('');
  keep('fTag','<option value="">Anything</option>'+
@@ -748,7 +799,7 @@ function fillFilters(){
   .map(([g,a])=>`<optgroup label="${g}">${opt(a.map(x=>[x,TAG_NAME[x]||x]))}</optgroup>`).join(''))}
 
 // ---------- Stat sheet: every number is a link to its possessions ----------
-const cellKey=F=>[F.pl||'',F.team||'',F.tag||'',F.out||''].join('|');
+const cellKey=F=>[F.pl||'',F.team||'',F.tag||'',F.out||'',F.on||''].join('|');
 function cell(n,F,txt){const shown=txt??n;if(!n)return `<td>${n===0&&txt==null?'':shown}</td>`;
  return `<td class="cl" data-f="${esc(JSON.stringify(F))}" data-key="${esc(cellKey(F))}" title="Watch these possessions">${shown}</td>`}
 function markActiveCell(){const k=cellKey(filters());document.querySelectorAll('td.cl[data-key]').forEach(td=>td.classList.toggle('on',tab!=='practices'&&td.dataset.key===k))}
@@ -996,16 +1047,28 @@ function render(){
   const len=TP.filter(x=>x.end!=null),TO=E.filter(e=>e.stat==='TO').length;
   return `<tr><td style="text-align:left;${TEAMCSS[t]}">${t}</td>${cell(P,{team:t})}${cell(pt,{team:t,out:'score'})}<td>${P?(pt/P).toFixed(2):'–'}</td><td>${len.length?(len.reduce((a,x)=>a+x.end-x.start,0)/len.length).toFixed(1)+'s':'–'}</td>${cell(S2.length,{team:t,tag:'Shot'},f(S2))}${cell(z('RIM').length,{team:t,tag:'RIM'},f(z('RIM')))}${cell(z('PAINT').length,{team:t,tag:'PAINT'},f(z('PAINT')))}${cell(z('N PAINT').length,{team:t,tag:'N PAINT'},f(z('N PAINT')))}${cell(z('3').length,{team:t,tag:'3PT'},f(z('3')))}${cell(TO,{team:t,tag:'TO'})}</tr>`}).join('');
  $('team').innerHTML=`<table class="st"><tr><th style="text-align:left">Team</th><th>Poss</th><th>Pts</th><th>PPP</th><th>Avg poss</th><th>FG</th><th>Rim</th><th>Paint</th><th>N paint</th><th>3P</th><th>TO</th></tr>${tr}</table>`;
- const ps=orderIds(ev.map(e=>e.p));
- $('box').innerHTML=ps.length?`<table class="st"><tr><th style="text-align:left">Player</th>${multi?'<th title="Practices with a stat">Prac</th>':''}<th>Pts</th><th>FG</th><th>3P</th><th>FT</th><th>REB</th>${STATS.map(s=>`<th title="${esc(s[1])}">${esc(s[0])}</th>`).join('')}</tr>${ps.map(p=>{const E=ev.filter(e=>e.p===p),S2=E.filter(e=>e.k==='shot'),S3=S2.filter(e=>e.zone==='3'),F=E.filter(e=>e.k==='ft'),c=s=>E.filter(e=>e.stat===s).length,PT=E.reduce((a,e)=>a+pts(e),0);
-  const np=VS.filter(s=>codedEvents(s).some(e=>e.p===p)).length;
-  return `<tr><td class="cl pname${sheetChart.player()===p?' on':''}" style="text-align:left" data-chart="${esc(p)}" title="Show ${esc(pname(p))}'s shot chart">${esc(pname(p))}</td>${multi?`<td>${np}</td>`:''}${cell(PT,{pl:p,tag:'Scoring'})}${cell(S2.length,{pl:p,tag:'Shot'},f(S2))}${cell(S3.length,{pl:p,tag:'3PT'},f(S3))}${cell(F.length,{pl:p,tag:'FT'},f(F))}${cell(c('OREB')+c('DREB'),{pl:p,tag:'REB'})}${STATS.map(s=>cell(c(s[0]),{pl:p,tag:s[0]})).join('')}</tr>`}).join('')}</table>`:'<span class="faint">No player events yet</span>';
+ const ON=onFloorStats(VS),ps=orderIds([...ev.map(e=>e.p),...[...ON.entries()].filter(([,r])=>r.op+r.dp).map(([id])=>id)]);
+ $('box').innerHTML=ps.length?`<table class="st"><tr><th style="text-align:left">Player</th>${multi?'<th title="Practices they played in">Prac</th>':''}<th title="Points for minus points against while on the floor — click to watch those possessions">+/−</th><th title="Possessions on the floor (offense + defense)">On</th><th title="Net points per possession on the floor: offensive PPP minus defensive PPP">Net</th><th>Pts</th><th>FG</th><th>3P</th><th>FT</th><th>REB</th>${STATS.map(s=>`<th title="${esc(s[1])}">${esc(s[0])}</th>`).join('')}</tr>${ps.map(p=>{const E=ev.filter(e=>e.p===p),S2=E.filter(e=>e.k==='shot'),S3=S2.filter(e=>e.zone==='3'),F=E.filter(e=>e.k==='ft'),c=s=>E.filter(e=>e.stat===s).length,PT=E.reduce((a,e)=>a+pts(e),0);
+  const np=VS.filter(s=>playedIn(s,p)).length;
+  return `<tr><td class="cl pname${sheetChart.player()===p?' on':''}" style="text-align:left" data-chart="${esc(p)}" title="Show ${esc(pname(p))}'s shot chart">${esc(pname(p))}</td>${multi?`<td>${np}</td>`:''}${(r=>cell(r.op+r.dp,{on:p},`<span class="${r.pm>0?'pos':r.pm<0?'neg':''}">${signed(r.pm)}</span>`)+cell(r.op+r.dp,{on:p},`${r.op+r.dp}`)+`<td title="Off ${ppp(r.of,r.op)} PPP (${r.op}) · Def ${ppp(r.da,r.dp)} PPP (${r.dp})">${netStr(r)}</td>`)(ON.get(p)||blankOn())}${cell(PT,{pl:p,tag:'Scoring'})}${cell(S2.length,{pl:p,tag:'Shot'},f(S2))}${cell(S3.length,{pl:p,tag:'3PT'},f(S3))}${cell(F.length,{pl:p,tag:'FT'},f(F))}${cell(c('OREB')+c('DREB'),{pl:p,tag:'REB'})}${STATS.map(s=>cell(c(s[0]),{pl:p,tag:s[0]})).join('')}</tr>`}).join('')}</table>`:'<span class="faint">No player events yet</span>';
+ renderCombos(VS);
  $('logWrap').classList.toggle('hidden',VS.length!==1);
  if(VS.length===1){const s=VS[0],L=[...s.events].sort((a,b)=>b.t-a.t||b.id-a.id),canDel=tab==='code';
   $('log').innerHTML=L.length?L.map(e=>{const col=(e.k==='shot'||e.k==='ft')?(e.make?'var(--good)':'var(--bad)'):e.k==='poss'?(e.team==='GOLD'?'var(--gold-text)':'var(--link)'):'var(--text)';
    const who=e.k==='stat'||e.k==='shot'||e.k==='ft'?` · ${esc(pname(e.p))}`:'';
    return `<div data-t="${e.t}"><span class="faint" style="width:56px">${fmt(e.t)}</span><span style="color:${col};flex:1">${e.k==='poss'||e.k==='end'?'— '+esc(evLabel(e))+' —':esc(evLabel(e))}${who}${e.grade?' · '+esc(e.grade):''}</span>${canDel?`<button class="x" data-del="${e.id}" title="Delete">×</button>`:''}</div>`}).join(''):'<span class="faint">No events yet</span>'}
  fillFilters();sheetChart.update(shotsIn(VS),{multi:VS.length});if(tab==='players')renderPlayers();renderTimeline();renderClips();renderName();lastT=-1}
+
+// ---------- Lineup combinations table (only computed while it's open) ----------
+function renderCombos(VS){if(!$('comboWrap').open)return;
+ const k=+$('comboK').value,min=Math.max(1,+$('comboMin').value||1),tm=$('comboTeam').value;
+ const rows=comboStats(VS,k).filter(r=>r.op+r.dp>=min&&(!tm||r.T===tm));
+ $('combos').innerHTML=rows.length?`<table class="st"><tr><th style="text-align:left">Team</th><th style="text-align:left">Players</th><th>Poss</th><th title="Offensive possessions / points per possession">Off</th><th title="Defensive possessions / points allowed per possession">Def</th><th>Net</th><th>Pts</th><th>+/−</th></tr>${rows.map(r=>{const n=r.op+r.dp;
+  return `<tr><td style="text-align:left;${TEAMCSS[r.T]}">${r.T}</td><td style="text-align:left;white-space:normal">${r.g.map(id=>esc(pname(id))).join(' · ')}</td>${cell(n,{on:r.g.join(',')})}<td>${r.op} · ${ppp(r.of,r.op)}</td><td>${r.dp} · ${ppp(r.da,r.dp)}</td><td>${netStr(r)}</td><td>${r.of}–${r.da}</td>${cell(n,{on:r.g.join(',')},`<span class="${r.pm>0?'pos':r.pm<0?'neg':''}">${signed(r.pm)}</span>`)}</tr>`}).join('')}</table>`
+  :`<span class="faint">No ${k}-player groups${min>1?` with ${min}+ possessions`:''} yet — lineups come from the Lineups section while coding.</span>`}
+$('comboWrap').addEventListener('toggle',()=>{LS.set('combosOpen',$('comboWrap').open);renderCombos(viewSessions())});
+['comboK','comboMin','comboTeam'].forEach(i=>$(i).addEventListener('change',()=>{$(i).blur();renderCombos(viewSessions())}));
+if(LS.get('combosOpen'))$('comboWrap').open=true;
 
 // ---------- Shot chart component (stat sheet + player profiles) ----------
 const COURT=[...$('court').children].filter(n=>n.id!=='pin').map(n=>n.outerHTML).join('');
@@ -1064,16 +1127,17 @@ function renderPlayers(){
  const scope=playerScope(),from=$('ppFrom').value,to=$('ppTo').value;
  $('ppScope').textContent=`${scope.length} practice${scope.length===1?'':'s'}${from||to?' in range':''} · ${cloud?'this browser + cloud':'this browser only — connect ☁ Cloud for the whole staff\'s practices'}`;
  const ids=orderIds([...activeIds(),...scope.flatMap(s=>codedEvents(s).map(e=>e.p))]);if(!ids.includes(profP)&&ids.length)profP=ids[0];
- $('ppList').innerHTML=ids.map(p=>{const n=scope.filter(s=>codedEvents(s).some(e=>e.p===p)).length;
+ $('ppList').innerHTML=ids.map(p=>{const n=scope.filter(s=>playedIn(s,p)).length;
   return `<button class="bt ${p===profP?'blk-bg':'gry'}" data-pp="${esc(p)}" title="${esc(pname(p))}">${esc(pname(p))}<small>${n} practice${n===1?'':'s'}</small></button>`}).join('');
- const mine=scope.map(s=>({s,E:codedEvents(s).filter(e=>e.p===profP)})).filter(x=>x.E.length),E=mine.flatMap(x=>x.E),np=mine.length;
- $('profEmpty').classList.toggle('hidden',!!E.length);$('profBody').classList.toggle('hidden',!E.length);
- if(!E.length){$('profEmpty').textContent=`No stats for ${pname(profP)} in ${scope.length?`these ${scope.length} practices`:'any practice yet'}.`;return}
- const L=statLine(E),per=n=>(n/np).toFixed(1),poss=mine.reduce((a,{s})=>a+possessions(s).filter(P=>possEvents(s,P).some(e=>e.p===profP)).length,0);
+ const mine=scope.filter(s=>playedIn(s,profP)).map(s=>({s,E:codedEvents(s).filter(e=>e.p===profP)})),E=mine.flatMap(x=>x.E),np=mine.length;
+ $('profEmpty').classList.toggle('hidden',!!np);$('profBody').classList.toggle('hidden',!np);
+ if(!np){$('profEmpty').textContent=`No stats for ${pname(profP)} in ${scope.length?`these ${scope.length} practices`:'any practice yet'}.`;return}
+ const L=statLine(E),per=n=>(n/np).toFixed(1),onR=onFloorStats(mine.map(x=>x.s)).get(profP)||blankOn(),onP=onR.op+onR.dp;
  const efg=L.fga?Math.round((L.fgm+0.5*L.tpm)/L.fga*100)+'%':'–',ato=L.c('TO')?(L.c('AST')/L.c('TO')).toFixed(1):L.c('AST')?'∞':'–';
- $('profHead').innerHTML=`<div class="phead"><b>${esc(pname(profP))}</b>${RM.get(profP)?.number?`<span class="muted">#${esc(RM.get(profP).number)}</span>`:''}<span class="muted">${np} practice${np===1?'':'s'} with stats · ${prettyDate(mine[0].s.date)}${np>1?' – '+prettyDate(mine.at(-1).s.date):''} · in ${poss} coded possession${poss===1?'':'s'}</span></div>
+ $('profHead').innerHTML=`<div class="phead"><b>${esc(pname(profP))}</b>${RM.get(profP)?.number?`<span class="muted">#${esc(RM.get(profP).number)}</span>`:''}<span class="muted">${np} practice${np===1?'':'s'} played · ${prettyDate(mine[0].s.date)}${np>1?' – '+prettyDate(mine.at(-1).s.date):''} · on the floor for ${onP} possession${onP===1?'':'s'}</span></div>
   <div class="tiles">${[['Points',L.pts,`${per(L.pts)} per practice`],['FG',`${L.fgm}-${L.fga}`,pct(L.fgm,L.fga)],['3PT',`${L.tpm}-${L.tpa}`,pct(L.tpm,L.tpa)],['FT',`${L.ftm}-${L.fta}`,pct(L.ftm,L.fta)],['eFG%',efg,'(FGM + ½·3PM) / FGA'],
-   ['Rebounds',L.reb,`${L.c('OREB')} off · ${L.c('DREB')} def`],['Assists',L.c('AST'),`AST/TO ${ato}`],['Turnovers',L.c('TO'),`${per(L.c('TO'))} per practice`],['Stocks',L.c('STL')+L.c('BLK'),`${L.c('STL')} stl · ${L.c('BLK')} blk`]]
+   ['Rebounds',L.reb,`${L.c('OREB')} off · ${L.c('DREB')} def`],['Assists',L.c('AST'),`AST/TO ${ato}`],['Turnovers',L.c('TO'),`${per(L.c('TO'))} per practice`],['Stocks',L.c('STL')+L.c('BLK'),`${L.c('STL')} stl · ${L.c('BLK')} blk`],
+   (r=>['+/−',`<span class="${r.pm>0?'pos':r.pm<0?'neg':''}">${signed(r.pm)}</span>`,`${r.op+r.dp} poss on floor · net ${netStr(r)}`])(onR)]
    .map(([l,v,s])=>`<div class="tile"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join('')}</div>`;
  const T=F=>({pl:profP,...F});
  const cols=[['Pts',L.pts,{tag:'Scoring'},per(L.pts)],['FG',`${L.fgm}-${L.fga}`,{tag:'Shot'},`${per(L.fgm)}-${per(L.fga)}`,L.fga],['FG%',null,null,pct(L.fgm,L.fga)],

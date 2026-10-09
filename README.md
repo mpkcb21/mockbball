@@ -80,6 +80,16 @@ Open **Review** (top bar, or *Review* on a practice in the Practices tab). The c
 - Inside each possession row, the stat that matched is outlined. Click any tag to jump straight to that moment (a few seconds before it).
 - **Shot chart:** below the box score, every shot from the practices in view. Click a player's name to chart just them (click again for everyone). Filter by result, zone, 3 type or grade, or click a row in the zone table (Rim, Paint, Non-paint 2, 3PT, each 3 type) to show only those shots. Click any dot to watch that shot, even if it's from a different practice than the one loaded.
 - To play every possession a player recorded a stat in, pick them in the Clips panel's **Player** filter.
+
+### Plus/minus and lineups
+
+Who's on the floor comes from the **Lineups** section while coding, so sub players there when the floor changes.
+
+- **+/−** in the box score is points for minus points against while that player was on the floor, across the practices in view. **On** is the number of possessions they were on the floor (offense + defense), and **Net** is offensive points per possession minus defensive points per possession. Hover Net for the split.
+- Click a player's **+/−** or **On** to watch every possession they were on the floor for. The Clips panel also has an **On floor** filter.
+- A sub logged up to 2 seconds after a possession starts still counts for that possession, which allows for coder reaction time.
+- **Lineup combinations** (collapsed under the box score) show how 5-man lineups, 3-man groups or 2-man pairs did together: possessions, offensive and defensive points per possession, net, and +/−. Click a group's numbers to watch those possessions.
+- Player profiles show career +/− and net rating too.
 - Hotkeys in Review mode only control video (Space, arrows, `[ ]`), so nothing gets coded by accident.
 
 ## Cloud sync (Supabase)
