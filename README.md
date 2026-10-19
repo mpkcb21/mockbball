@@ -36,6 +36,23 @@ Players start as placeholders, **Player 1–10**. Real names live only in your S
 - **Add players** beyond ten, and untick **Active** to hide someone from lineups without losing their history.
 - Without the key, everyone shows as Player 1–10, or "Unknown player" for players that were added in the cloud.
 
+## Library tab
+
+Automatic folders built from every practice (narrow them with the date range): **Possessions** (all, Gold, Blue, scoring, empty, turnover), **Shots** (all, made, missed, rim, paint, non-paint 2s, 3s, each 3 type, each grade), **Free throws**, and one folder per **offensive** and **defensive** stat (assists, turnovers, steals, deflections, …). Each shows how many clips it holds.
+
+- Click a folder to load its clips, then press **▶ Play filtered** or click a clip.
+- **Player** narrows every folder to one player.
+- **Play stat folders as** chooses between just the moment (a few seconds around the stat) and the whole possession it happened in.
+
+## My folders tab
+
+Coaches' own saved clips, so the good ones don't have to be found twice.
+
+- Press **☆** on any clip row (in Code, Review or Library), or **☆ Save this play** under the video to save the possession at the playhead. Pick a folder or name a new one.
+- In **My folders**, open a folder to play it straight through, add a note to each clip, reorder with ↑ ↓, or remove clips.
+- Enter **Your name** so folders show who made them; **Show: Just mine** hides everyone else's.
+- Folders save in the cloud (`folders` table) when it's connected, so the whole staff sees them. Saved clips point at the practice and possession, not a copy of the video. If that possession or practice is later deleted, the clip shows as no longer available.
+
 ## Players tab
 
 A profile for each player built from every practice the app knows about: this browser, plus the cloud when it's connected. Use the date range to look at a stretch (e.g. the last two weeks), or *All time*.

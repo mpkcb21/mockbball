@@ -28,13 +28,15 @@ a{color:var(--link)}
 .dot{width:11px;height:11px;border-radius:50%}
 .muted{color:var(--muted)}.faint{color:var(--faint)}
 .main{display:grid;grid-template-columns:minmax(0,1fr) 470px;gap:0;align-items:start}
-body[data-tab=review] .main{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
-body[data-tab=review] #codeWin,body[data-tab=review] #keysBlk{display:none}
+body:is([data-tab=review],[data-tab=library],[data-tab=folders]) .main{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
+body:is([data-tab=review],[data-tab=library],[data-tab=folders]) :is(#codeWin,#keysBlk){display:none}
+body:not([data-tab=library]) #libPanel,body:not([data-tab=folders]) #folderPanel{display:none}
+body:is([data-tab=library],[data-tab=folders]) #statsBlk,body[data-tab=folders] #clipsBlk{display:none}
 body[data-tab=practices] .main,body[data-tab=players] .main,body[data-tab=players] #statsBlk{display:none}
 body:not([data-tab=players]) #playersView{display:none}
 body:not([data-tab=practices]) #practicesView{display:none}
 body:not([data-tab=code]) .code-only{display:none!important}
-@media (max-width:1100px){.main,body[data-tab=review] .main{grid-template-columns:1fr}.right{order:-1}body[data-tab=review] .right{order:0}}
+@media (max-width:1100px){.main,body:is([data-tab=review],[data-tab=library],[data-tab=folders]) .main{grid-template-columns:1fr}.right{order:-1}body:is([data-tab=review],[data-tab=library],[data-tab=folders]) .right{order:0}}
 .blk{background:var(--card);border:2px solid var(--edge);margin:8px 10px}
 .hd{border-bottom:2px solid var(--edge);text-align:center;padding:6px;font-size:13px;letter-spacing:.3px;position:relative}
 .hd::before{content:'';position:absolute;left:6px;top:7px;width:11px;height:11px;border:1px solid var(--faint);background:var(--card)}
@@ -76,8 +78,8 @@ body:not([data-tab=code]) .code-only{display:none!important}
 .tick.mk{background:#2e9e3a;height:10px}.tick.ms{background:#d63b1f;height:10px}
 #ph{position:absolute;top:0;bottom:0;width:2px;background:var(--accent);pointer-events:none;z-index:2}
 .clips{max-height:360px;overflow:auto}
-body[data-tab=review] .clips{max-height:520px}
-.clip{display:grid;grid-template-columns:44px 58px 104px 40px minmax(0,1fr) 22px;gap:6px;align-items:center;padding:5px 8px;border-bottom:1px solid var(--line);cursor:pointer}
+body:is([data-tab=review],[data-tab=library]) .clips{max-height:520px}
+.clip{display:grid;grid-template-columns:44px 58px 104px 40px minmax(0,1fr) 40px;gap:6px;align-items:center;padding:5px 8px;border-bottom:1px solid var(--line);cursor:pointer}
 .clip:hover{background:var(--hover)}
 .clip.playing{background:var(--playing)}
 .pgroup{padding:4px 8px;background:var(--th);color:var(--muted);font-size:11px;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:1}
@@ -90,7 +92,7 @@ body[data-tab=review] .clips{max-height:520px}
 .x:hover{color:var(--bad)}
 .filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:8px;border-bottom:1px solid var(--line)}
 .banner{display:flex;gap:8px;align-items:center;padding:6px 8px;background:var(--banner);border-bottom:1px solid var(--banner-edge);font-size:12px}
-@media (max-width:640px){.filters{grid-template-columns:repeat(2,minmax(0,1fr))}.clip{grid-template-columns:36px 50px 90px minmax(0,1fr) 22px}.clip .dur{display:none}}
+@media (max-width:640px){.filters{grid-template-columns:repeat(2,minmax(0,1fr))}.clip{grid-template-columns:36px 50px 90px minmax(0,1fr) 40px}.clip .dur{display:none}}
 .log{max-height:240px;overflow:auto;font-size:11px;line-height:1.7}
 .log div{display:flex;gap:8px;align-items:center;cursor:pointer;padding:0 4px}
 .log div:hover{background:var(--hover)}
@@ -119,6 +121,19 @@ dialog{border:2px solid var(--edge);border-radius:8px;padding:14px;max-width:680
 dialog::backdrop{background:rgba(0,0,0,.5)}
 dialog pre{background:var(--pre);border:1px solid var(--line);padding:8px;font-size:11px;overflow:auto;white-space:pre;color:var(--text);max-height:320px}
 .sec{font-size:12px;color:var(--muted);margin:8px 0 4px}
+/* library + my folders */
+.flist{max-height:640px;overflow:auto}
+.fsec{padding:8px 10px 3px;font-size:10px;letter-spacing:.5px;color:var(--faint);text-transform:uppercase;font-weight:600}
+.frow{display:flex;align-items:center;gap:8px;padding:5px 10px;border-bottom:1px solid var(--line);cursor:pointer}
+.frow:hover{background:var(--hover)}.frow.on{background:var(--playing)}.frow.zero{opacity:.45}
+.frow .cnt{margin-left:auto;color:var(--muted);font-variant-numeric:tabular-nums}
+.fclip{display:grid;grid-template-columns:26px minmax(0,1fr) 98px minmax(0,1.3fr) minmax(0,1fr) 66px;gap:6px;align-items:center;padding:5px 8px;border-bottom:1px solid var(--line);cursor:pointer}
+.fclip:hover{background:var(--hover)}.fclip.playing{background:var(--playing)}.fclip.gone{opacity:.5;cursor:default}
+@media (max-width:640px){.fclip{grid-template-columns:22px minmax(0,1fr) minmax(0,1fr) 66px}.fclip .fwhat,.fclip .ftime{display:none}}
+.savepop{position:absolute;z-index:60;background:var(--card);border:1px solid var(--input-edge);border-radius:6px;padding:8px;box-shadow:0 6px 20px rgba(0,0,0,.4);width:270px;display:flex;flex-direction:column;gap:4px}
+.savepop .bt{text-align:left;height:28px}
+.rowbtns{display:flex;gap:8px;justify-content:flex-end;align-items:center}
+.star:hover{color:#F7D448}
 .pos{color:var(--good)}.neg{color:var(--bad)}
 .st td.pos,.st td .pos{font-weight:600}
 /* player profiles */
@@ -163,7 +178,7 @@ body[data-tab=review] .chartgrid{grid-template-columns:minmax(0,1fr) minmax(0,1f
 <div class="bar">
  <span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span>
  <span style="margin-left:8px;font-weight:500">Practice CW</span>
- <span class="seg-ctl" style="margin-left:6px"><button class="bt sm" id="tabPractices">Practices</button><button class="bt sm on" id="tabCode">Code</button><button class="bt sm" id="tabReview">Review</button><button class="bt sm" id="tabPlayers">Players</button></span>
+ <span class="seg-ctl" style="margin-left:6px"><button class="bt sm" id="tabPractices">Practices</button><button class="bt sm on" id="tabCode">Code</button><button class="bt sm" id="tabReview">Review</button><button class="bt sm" id="tabLibrary">Library</button><button class="bt sm" id="tabFolders">My folders</button><button class="bt sm" id="tabPlayers">Players</button></span>
  <input id="sessName" class="txt code-only" placeholder="Practice name" style="margin-left:6px;width:200px">
  <input id="sessDate" type="date" class="txt code-only" style="width:140px">
  <span id="reviewing" class="muted" style="margin-left:6px"></span>
@@ -257,13 +272,14 @@ body[data-tab=review] .chartgrid{grid-template-columns:minmax(0,1fr) minmax(0,1f
    <span style="width:8px"></span>
    <button class="bt gry sm" data-rate="0.5">0.5×</button><button class="bt gry sm" data-rate="1">1×</button><button class="bt gry sm" data-rate="2">2×</button>
    <span style="flex:1"></span>
-   <span id="nowPractice" class="muted" style="margin-right:8px"></span>
+   <button class="bt gry sm" id="saveNow" title="Save the possession at the playhead to one of your folders">☆ Save this play</button>
+   <span id="nowPractice" class="muted" style="margin:0 8px"></span>
    <span class="mono" id="clock" style="font-size:13px">0:00.0 / 0:00.0</span>
   </div>
   <div class="tl" id="tl" title="Click to seek. Colored bars are possessions, ticks are coded events."><div id="tlSegs"></div><div id="tlTicks"></div><div id="ph"></div></div>
  </div>
 
- <div class="blk">
+ <div class="blk" id="clipsBlk">
   <div class="hd">CLIPS</div>
   <div class="banner hidden" id="banner"><span id="bannerTxt" style="flex:1"></span><button class="bt grn sm" id="bannerPlay">▶ Play all</button><button class="bt gry sm" id="bannerClear">Clear</button></div>
   <div class="filters">
@@ -289,6 +305,29 @@ body[data-tab=review] .chartgrid{grid-template-columns:minmax(0,1fr) minmax(0,1f
 
 <!-- RIGHT: hotkey key + code window (Code tab) / stat sheet (Review tab) -->
 <div class="right" id="rightCol">
+ <!-- LIBRARY: automatic folders across every practice -->
+ <div class="blk" id="libPanel">
+  <div class="hd">LIBRARY</div>
+  <div class="cfil" style="padding:8px;border-bottom:1px solid var(--line)">
+   <label class="f">Player<select id="libPl"></select></label>
+   <label class="f">Play stat folders as<select id="libAs"><option value="ev">Moments (just the play)</option><option value="poss">Whole possessions</option></select></label>
+   <label class="f">Practices from<input type="date" id="libFrom"></label>
+   <label class="f">to<input type="date" id="libTo"></label>
+  </div>
+  <div id="libScopeTxt" class="faint" style="padding:6px 10px"></div>
+  <div id="libFolders" class="flist"></div>
+ </div>
+ <!-- MY FOLDERS: coaches' own saved clips -->
+ <div class="blk" id="folderPanel">
+  <div class="hd">MY FOLDERS</div>
+  <div class="cfil" style="padding:8px;border-bottom:1px solid var(--line)">
+   <label class="f">Your name<input id="coachName" placeholder="e.g. Coach Lee"></label>
+   <label class="f">Show<select id="fShow"><option value="all">Everyone's folders</option><option value="mine">Just mine</option></select></label>
+  </div>
+  <div style="display:flex;gap:6px;padding:8px;border-bottom:1px solid var(--line)"><input id="nfName" class="txt" style="flex:1" placeholder="New folder, e.g. Transition D teaching clips"><button class="bt grn sm" id="nfCreate">＋ New folder</button></div>
+  <div id="folderList" class="flist" style="max-height:230px;border-bottom:2px solid var(--edge)"></div>
+  <div id="folderBody"></div>
+ </div>
  <div class="blk" id="keysBlk">
   <div class="hd" style="cursor:pointer" id="keysHd" title="Show / hide">HOTKEYS<span id="keyLive" title="Green = hotkeys active. Grey = click anywhere on the page outside the video."></span><span id="keysTog" class="faint" style="position:absolute;right:8px;font-size:11px">hide</span></div>
   <div class="keys" id="keys"></div>
@@ -345,6 +384,13 @@ body[data-tab=review] .chartgrid{grid-template-columns:minmax(0,1fr) minmax(0,1f
 </div>
 
 <div class="foot"><span style="color:#E9502F">Status</span> ▸ <span id="status">Create a practice, then mark possessions as you watch</span></div>
+</div>
+
+<!-- Save-to-folder popover -->
+<div id="savePop" class="savepop hidden">
+ <div class="faint" style="font-size:11px">Save clip to…</div>
+ <div id="savePopList" style="display:flex;flex-direction:column;gap:3px;max-height:220px;overflow:auto"></div>
+ <div style="display:flex;gap:4px;margin-top:4px"><input id="spNew" class="txt" style="flex:1;min-width:0" placeholder="New folder name"><button class="bt grn sm" id="spCreate">Create</button></div>
 </div>
 
 <!-- Shot popup (S) -->
@@ -429,6 +475,15 @@ create table if not exists public.players (
   updated_at timestamptz not null default now()
 );
 
+-- Coaches' saved-clip folders (clips point at a practice + possession/stat, so no video is stored)
+create table if not exists public.folders (
+  id text primary key,
+  name text not null,
+  owner text,
+  clips jsonb not null default '[]',
+  updated_at timestamptz not null default now()
+);
+
 -- One row per coded stat / shot / free throw, with its timestamp
 create table if not exists public.events (
   session_id text not null references public.sessions(id) on delete cascade,
@@ -451,15 +506,18 @@ alter table public.sessions enable row level security;
 alter table public.possessions enable row level security;
 alter table public.events enable row level security;
 alter table public.players enable row level security;
+alter table public.folders enable row level security;
 drop policy if exists "team read/write" on public.sessions;
 drop policy if exists "team read/write" on public.possessions;
 drop policy if exists "team read/write" on public.events;
 drop policy if exists "team read/write" on public.players;
+drop policy if exists "team read/write" on public.folders;
 create policy "team read/write" on public.sessions for all to anon, authenticated using (true) with check (true);
 create policy "team read/write" on public.possessions for all to anon, authenticated using (true) with check (true);
 create policy "team read/write" on public.events for all to anon, authenticated using (true) with check (true);
 create policy "team read/write" on public.players for all to anon, authenticated using (true) with check (true);
-grant select, insert, update, delete on public.sessions, public.possessions, public.events, public.players to anon, authenticated;
+create policy "team read/write" on public.folders for all to anon, authenticated using (true) with check (true);
+grant select, insert, update, delete on public.sessions, public.possessions, public.events, public.players, public.folders to anon, authenticated;
 
 -- Make the API pick up the new tables right away
 notify pgrst, 'reload schema';</pre>
@@ -671,6 +729,8 @@ const evLabel=e=>e.k==='stat'?e.stat:e.k==='ft'?`${e.make?'+':'-'} FT`:e.k==='sh
 const byDate=(a,b)=>(a.date||'').localeCompare(b.date||'')||a.created.localeCompare(b.created);
 function viewSessions(){
  if(tab==='players')return playerScope();
+ if(tab==='library')return libScope();
+ if(tab==='folders')return folderSessions();
  if(tab==='practices')return[...selected].map(getSess).filter(Boolean).sort(byDate);
  if(tab==='review')return(reviewSet||[S]).map(s=>getSess(s.id)||s).sort(byDate);
  return[S]}
@@ -763,11 +823,12 @@ function renderClips(){
   const head=multi&&c.s.id!==lastSid?`<div class="pgroup">${esc(practiceLabel(c.s))}${c.s.source?'':' — no video linked'}</div>`:'';lastSid=c.s.id;
   const tm=`<span><span class="tm" style="${TEAMCSS[c.team]||''}"></span> ${c.team?c.team[0]:''}</span>`;
   const body=poss?`<span><b>${c.pt} pts</b> ${c.E.map(e=>chip(c.s,e,F)).join('')||'<span class="faint">no events</span>'}</span>`:`<span>${chip(c.s,c.e,F)}${c.e.grade?`<span class="chip">${esc(c.e.grade)}</span>`:''}</span>`;
-  const id=poss?`#${c.P.n}`:`${i+1}`,delBtn=canDel?`<button class="x" data-del="${poss?c.P.id:c.e.id}" title="${poss?'Delete possession marker':'Delete event'}">×</button>`:'<span></span>';
+  const id=poss?`#${c.P.n}`:`${i+1}`,delBtn=`<span class="rowbtns"><button class="x star" data-save="${i}" title="Save to a folder">☆</button>${canDel?`<button class="x" data-del="${poss?c.P.id:c.e.id}" title="${poss?'Delete possession marker':'Delete event'}">×</button>`:''}</span>`;
   return `${head}<div class="clip${c.key===playing?' playing':''}" data-i="${i}"><span class="mono">${id}</span>${tm}<span class="mono">${fmt(c.start)}–${fmt(c.end)}</span><span class="mono dur faint">${(c.end-c.start).toFixed(1)}s</span>${body}${delBtn}</div>`}).join('')
  :`<div class="faint" style="padding:12px">${viewSessions().some(s=>s.events.length)?'No clips match these filters.':tab==='code'?'Press P (or GOLD / BLUE POSSESSION) while the video plays — each press starts a new clip and ends the previous one.':'No coded possessions in these practices yet.'}</div>`;
- markActiveCell()}
-$('clips').addEventListener('click',e=>{const d=e.target.closest('[data-del]');if(d){del(+d.dataset.del);return}
+ markActiveCell();markFolderPlaying()}
+$('clips').addEventListener('click',e=>{const sv=e.target.closest('[data-save]');if(sv){const c=clipList()[+sv.dataset.save];if(c)openSave(clipRef(c),sv);return}
+ const d=e.target.closest('[data-del]');if(d){del(+d.dataset.del);return}
  const sk=e.target.closest('[data-seek]');if(sk){jumpTo(getSess(sk.dataset.sid),+sk.dataset.seek-num('padPre',4));return}
  const row=e.target.closest('.clip');if(row)playQueue(clipList(),+row.dataset.i,true)});
 function cueClip(c){if(openSessionVideo(c.s,c.start,true)){$('nowPractice').textContent=viewSessions().length>1?practiceLabel(c.s):'';return true}
@@ -815,14 +876,15 @@ $('statsBlk').addEventListener('click',e=>{
 
 // ---------- Tabs ----------
 function setTab(t){tab=t;document.body.dataset.tab=t;
- ['Practices','Code','Review','Players'].forEach(n=>$('tab'+n).classList.toggle('on',t===n.toLowerCase()));
+ ['Practices','Code','Review','Library','Folders','Players'].forEach(n=>$('tab'+n).classList.toggle('on',t===n.toLowerCase()));
  if(t!=='code'&&shotOpen())closeShot();
  if(t==='practices'){$('practicesView').appendChild($('statsBlk'));stopQueue();src.pause();renderPractices()}
  else if(t==='players'){stopQueue();src.pause()}
+ else if(t==='library'||t==='folders'){stopQueue();closeSave()}
  else if(t==='review'){$('rightCol').appendChild($('statsBlk'));if(!reviewSet)reviewSet=[S];const VS=viewSessions();if(!VS.some(isLoaded)&&VS[0])openSessionVideo(VS[0],null,false)}
  else{$('main').after($('statsBlk'));reviewSet=null;stopQueue();if(!isLoaded(S))openSessionVideo(S,null,false);drawAll()}
  LS.set('tab',t);render()}
-$('tabPractices').onclick=()=>setTab('practices');$('tabPlayers').onclick=()=>setTab('players');$('tabCode').onclick=()=>setTab('code');$('tabReview').onclick=()=>{if(tab!=='review'&&tab!=='practices')reviewSet=null;else if(tab==='practices'&&selected.size)reviewSet=viewSessions();setTab('review')};
+$('tabPractices').onclick=()=>setTab('practices');$('tabPlayers').onclick=()=>setTab('players');$('tabLibrary').onclick=()=>setTab('library');$('tabFolders').onclick=()=>setTab('folders');$('tabCode').onclick=()=>setTab('code');$('tabReview').onclick=()=>{if(tab!=='review'&&tab!=='practices')reviewSet=null;else if(tab==='practices'&&selected.size)reviewSet=viewSessions();setTab('review')};
 function openForCoding(s){if(S.id!==s.id){save();S=s;player=null}LS.set('current',S.id);setTab('code');st(`Coding ${practiceLabel(S)}`)}
 
 // ---------- Practices tab ----------
@@ -921,6 +983,7 @@ const FLASH_ID={' ':'space','=':'+','-':'x','[':'clip',']':'clip'};
 document.addEventListener('keydown',e=>{
  if(document.querySelector('dialog[open]')||tab==='practices'||tab==='players')return;
  const tg=e.target,tag=tg.tagName,k=e.key;
+ if(k==='Escape'&&!$('savePop').classList.contains('hidden')){e.preventDefault();closeSave();return}
  if(tag==='TEXTAREA'||tg.isContentEditable||(tag==='INPUT'&&!['checkbox','radio','button','file'].includes(tg.type)))return;
  const coding=tab==='code';
  if((e.metaKey||e.ctrlKey)&&!e.altKey&&k.toLowerCase()==='z'){if(!coding)return;e.preventDefault();undo();flash('undo');return}
@@ -1025,7 +1088,7 @@ $('cConnect').onclick=async()=>{const cfg={url:$('cUrl').value.trim(),key:$('cKe
  if(!/^https?:\/\//.test(cfg.url)||!cfg.key){$('cMsg').textContent='Enter the project URL and key';return}
  $('cMsg').textContent='Connecting…';
  try{await cloudFetch('sessions?select=id&limit=1',{},cfg);cloud=cfg;tablesWarned=false;LS.set('cloud',cfg);cloudState('on','ok');
-  await refreshCloud();loadRoster();
+  await refreshCloud();loadRoster();loadFolders();
   const up=[...lib.values()].filter(x=>!x.cloud).map(x=>x.s);for(const s of up)await pushCloud(s);
   $('cMsg').textContent=`Connected${up.length?` · uploaded ${up.length} practice${up.length===1?'':'s'} from this browser`:''} — practices are in the Practices tab`;
   if(tab==='practices')renderPractices();if(tab==='players')renderPlayers()}
@@ -1057,7 +1120,7 @@ function render(){
   $('log').innerHTML=L.length?L.map(e=>{const col=(e.k==='shot'||e.k==='ft')?(e.make?'var(--good)':'var(--bad)'):e.k==='poss'?(e.team==='GOLD'?'var(--gold-text)':'var(--link)'):'var(--text)';
    const who=e.k==='stat'||e.k==='shot'||e.k==='ft'?` · ${esc(pname(e.p))}`:'';
    return `<div data-t="${e.t}"><span class="faint" style="width:56px">${fmt(e.t)}</span><span style="color:${col};flex:1">${e.k==='poss'||e.k==='end'?'— '+esc(evLabel(e))+' —':esc(evLabel(e))}${who}${e.grade?' · '+esc(e.grade):''}</span>${canDel?`<button class="x" data-del="${e.id}" title="Delete">×</button>`:''}</div>`}).join(''):'<span class="faint">No events yet</span>'}
- fillFilters();sheetChart.update(shotsIn(VS),{multi:VS.length});if(tab==='players')renderPlayers();renderTimeline();renderClips();renderName();lastT=-1}
+ fillFilters();sheetChart.update(shotsIn(VS),{multi:VS.length});if(tab==='players')renderPlayers();if(tab==='library')renderLibrary();if(tab==='folders')renderFolders();renderTimeline();renderClips();renderName();lastT=-1}
 
 // ---------- Lineup combinations table (only computed while it's open) ----------
 function renderCombos(VS){if(!$('comboWrap').open)return;
@@ -1069,6 +1132,119 @@ function renderCombos(VS){if(!$('comboWrap').open)return;
 $('comboWrap').addEventListener('toggle',()=>{LS.set('combosOpen',$('comboWrap').open);renderCombos(viewSessions())});
 ['comboK','comboMin','comboTeam'].forEach(i=>$(i).addEventListener('change',()=>{$(i).blur();renderCombos(viewSessions())}));
 if(LS.get('combosOpen'))$('comboWrap').open=true;
+
+// ---------- Library tab: automatic folders across every practice ----------
+const LIB_FOLDERS=[
+ ['Possessions',[['All possessions',{mode:'poss'},'all'],['Gold possessions',{mode:'poss',team:'GOLD'},'GOLD'],['Blue possessions',{mode:'poss',team:'BLUE'},'BLUE'],
+  ['Scoring possessions',{mode:'poss',out:'score'},'score'],['Empty possessions',{mode:'poss',out:'empty'},'empty'],['Turnover possessions',{mode:'poss',out:'to'},'to']]],
+ ['Shots',[['All shots',{tag:'Shot'}],['Made shots',{tag:'Make'}],['Missed shots',{tag:'Miss'}],['Rim',{tag:'RIM'}],['Paint',{tag:'PAINT'}],['Non-paint 2s',{tag:'N PAINT'}],['3-pointers',{tag:'3PT'}],
+  ...T3.map(t=>[t,{tag:t}]),...GRADES.map(g=>{const w=g.replace(' SHOT','');return[w[0]+w.slice(1).toLowerCase()+' shots',{tag:g}]})]],
+ ['Free throws',[['All free throws',{tag:'FT'}],['Made free throws',{tag:'FT make'}],['Missed free throws',{tag:'FT miss'}]]],
+ ['Offense',[['Points (makes + FTs)',{tag:'Scoring'}],...STATS.filter(s=>s[3]==='off').map(s=>[s[1]+'s',{tag:s[0]}])]],
+ ['Defense',[['Rebounds (all)',{tag:'REB'}],...STATS.filter(s=>s[3]==='def').map(s=>[s[1]+(/s$/.test(s[1])?'':'s'),{tag:s[0]}])]]];
+let libActive=null; // "section|index" of the open folder
+function libScope(){const a=$('libFrom').value,b=$('libTo').value;
+ return[...lib.values()].map(x=>getSess(x.s.id)).filter(s=>s&&(!a||(s.date||'')>=a)&&(!b||(s.date||'')<=b)).sort(byDate)}
+// One pass over the practices for every folder's count.
+function libCounts(VS,pl){const tags=new Map(),poss={all:0,GOLD:0,BLUE:0,score:0,empty:0,to:0};
+ VS.forEach(s=>{codedEvents(s).forEach(e=>{if(!pl||e.p===pl)eventTags(e).forEach(t=>tags.set(t,(tags.get(t)||0)+1))});
+  floorData(s).poss.forEach(({P})=>{const E=possEvents(s,P);if(pl&&!E.some(e=>e.p===pl))return;const pt=possPts(P,E);
+   poss.all++;poss[P.team]++;pt>0?poss.score++:poss.empty++;if(E.some(e=>e.stat==='TO'))poss.to++})});
+ return{tags,poss}}
+function libFilter(F){return{...F,mode:F.mode||$('libAs').value,pl:$('libPl').value}}
+function renderLibrary(){const VS=libScope(),pl=$('libPl').value,C=libCounts(VS,pl);
+ const s=$('libPl'),v0=s.value;s.innerHTML='<option value="">All players</option>'+orderIds([...activeIds(),...VS.flatMap(x=>codedEvents(x).map(e=>e.p))]).map(id=>`<option value="${esc(id)}">${esc(pname(id))}</option>`).join('');s.value=v0;
+ $('libScopeTxt').textContent=`${VS.length} practice${VS.length===1?'':'s'}${$('libFrom').value||$('libTo').value?' in range':''}${pl?' · '+pname(pl):''} · ${cloud?'this browser + cloud':'this browser only'}`;
+ $('libFolders').innerHTML=LIB_FOLDERS.map(([sec,rows],si)=>`<div class="fsec">${sec}</div>`+rows.map(([label,F,pk],ri)=>{const n=pk?C.poss[pk]:C.tags.get(F.tag)||0,k=si+'|'+ri;
+  return `<div class="frow${libActive===k?' on':''}${n?'':' zero'}" data-lf="${k}">📁 ${esc(label)}<span class="cnt">${n}</span></div>`}).join('')).join('')}
+function openLibFolder(k){const[si,ri]=k.split('|').map(Number),row=LIB_FOLDERS[si]&&LIB_FOLDERS[si][1][ri];if(!row)return;
+ libActive=k;stopQueue();setFilters(libFilter(row[1]));renderLibrary();renderClips();st(`Library ▸ ${row[0]} — ${clipList().length} clips. Press ▶ Play filtered or click a clip.`)}
+$('libFolders').addEventListener('click',e=>{const r=e.target.closest('[data-lf]');if(r)openLibFolder(r.dataset.lf)});
+['libPl','libAs','libFrom','libTo'].forEach(i=>$(i).addEventListener('change',()=>{$(i).blur();if(libActive)openLibFolder(libActive);else render()}));
+
+// ---------- My folders: coaches' own saved clips ----------
+// A saved clip points at a practice and a possession (marker id) or stat (event id), or a raw moment — so it survives renumbering.
+let folders=LS.get('folders')||[],curFolder=LS.get('curFolder'),savePending=null;
+const folderTimers={};
+$('coachName').value=LS.get('coachName')||'';
+const coach=()=>$('coachName').value.trim();
+const clipRef=c=>c.P?{sid:c.s.id,kind:'p',ref:c.P.id}:{sid:c.s.id,kind:'e',ref:c.e.id};
+function folderClip(r){const s=getSess(r.sid);if(!s)return null;const lead=num('padPoss',1),pre=num('padPre',4),post=num('padPost',2);
+ if(r.kind==='p'){const P=possessions(s).find(P=>P.id===r.ref);if(!P)return null;const E=possEvents(s,P);
+  return{key:'f'+r.id,s,P,E,pt:possPts(P,E),team:P.team,start:Math.max(0,P.start-lead),end:P.end??Math.max(P.start+30,(E.at(-1)?.t??0)+5),t:P.start}}
+ if(r.kind==='e'){const e=s.events.find(x=>x.id===r.ref);if(!e)return null;return{key:'f'+r.id,s,e,team:e.team,start:Math.max(0,e.t-pre),end:e.t+post,t:e.t}}
+ return{key:'f'+r.id,s,m:true,team:null,start:Math.max(0,r.t-pre),end:r.t+post,t:r.t}}
+const curF=()=>folders.find(f=>f.id===curFolder);
+function folderSessions(){const f=curF();return f?[...new Set(f.clips.map(r=>r.sid))].map(getSess).filter(Boolean).sort(byDate):[]}
+function storeFolders(){LS.set('folders',folders)}
+function touchFolder(f){f.updated=new Date().toISOString();storeFolders();queueFolderCloud(f);if(tab==='folders')renderFolders()}
+function newFolder(name){const f={id:newId(),name,owner:coach(),created:new Date().toISOString(),updated:'',clips:[]};folders.push(f);curFolder=f.id;LS.set('curFolder',curFolder);touchFolder(f);return f}
+function addToFolder(f,ref){if(f.clips.some(r=>r.sid===ref.sid&&r.kind===ref.kind&&r.ref===ref.ref&&r.t===ref.t)){st(`Already in “${f.name}”`);return}
+ f.clips.push({id:newId(),...ref,note:'',added:new Date().toISOString(),by:coach()});touchFolder(f);st(`Saved to “${f.name}” (${f.clips.length} clip${f.clips.length===1?'':'s'})`)}
+function openSave(ref,anchor){savePending=ref;const me=coach();
+ const list=[...folders].sort((a,b)=>(b.owner===me)-(a.owner===me)||(b.updated||'').localeCompare(a.updated||''));
+ $('savePopList').innerHTML=list.length?list.map(f=>`<button class="bt gry" data-spf="${esc(f.id)}">📁 ${esc(f.name)}<span class="faint" style="float:right">${f.clips.length}${f.owner&&f.owner!==me?' · '+esc(f.owner):''}</span></button>`).join(''):'<div class="faint">No folders yet — name one below.</div>';
+ const pop=$('savePop'),r=anchor.getBoundingClientRect();pop.classList.remove('hidden');
+ pop.style.left=Math.max(8,Math.min(window.scrollX+r.right-270,window.scrollX+document.documentElement.clientWidth-280))+'px';pop.style.top=(window.scrollY+r.bottom+4)+'px';$('spNew').value=''}
+function closeSave(){$('savePop').classList.add('hidden');savePending=null}
+$('savePopList').addEventListener('click',e=>{const b=e.target.closest('[data-spf]');if(!b||!savePending)return;const f=folders.find(x=>x.id===b.dataset.spf);if(f)addToFolder(f,savePending);closeSave()});
+$('spCreate').onclick=()=>{const name=$('spNew').value.trim();if(!name){$('spNew').focus();return}const ref=savePending;const f=newFolder(name);if(ref)addToFolder(f,ref);closeSave()};
+$('spNew').addEventListener('keydown',e=>{if(e.key==='Enter')$('spCreate').click()});
+document.addEventListener('mousedown',e=>{if(!$('savePop').classList.contains('hidden')&&!e.target.closest('#savePop,[data-save],#saveNow'))closeSave()});
+$('saveNow').onclick=()=>{const s=tab==='code'?S:viewSessions().find(isLoaded);if(!s||!isLoaded(s)){st('Load a practice video first');return}
+ const t=now(),P=possAt(s,t);openSave(P?{sid:s.id,kind:'p',ref:P.id}:{sid:s.id,kind:'m',t:+t.toFixed(2)},$('saveNow'));
+ st(P?`Saving ${P.team} possession #${P.tn} from ${practiceLabel(s)}`:`No possession here — saving the moment at ${fmt(t)}`)};
+function markFolderPlaying(){const k=queue&&queue[qi]&&queue[qi].key;document.querySelectorAll('#folderBody .fclip').forEach(r=>r.classList.toggle('playing',!!k&&r.dataset.key===k))}
+function renderFolders(){
+ if(document.activeElement&&document.activeElement.closest&&document.activeElement.closest('#folderBody,#folderPanel .cfil'))return; // don't clobber typing
+ const me=coach(),mine=$('fShow').value==='mine',list=folders.filter(f=>!mine||f.owner===me).sort((a,b)=>(b.updated||'').localeCompare(a.updated||''));
+ $('folderList').innerHTML=list.length?list.map(f=>`<div class="frow${f.id===curFolder?' on':''}" data-fid="${esc(f.id)}">📁 <b>${esc(f.name)}</b><span class="faint">${f.owner?esc(f.owner):''}</span><span class="cnt">${f.clips.length}</span></div>`).join('')
+  :`<div class="faint" style="padding:10px">${folders.length?'No folders of yours yet.':'No folders yet. Name one above, or press ☆ on any clip (Review, Library or Code) to start one.'}</div>`;
+ const f=curF();
+ if(!f){$('folderBody').innerHTML=`<div class="faint" style="padding:12px">Pick a folder above. Save clips into folders with ☆ on any clip row or <b>☆ Save this play</b> under the video.</div>`;return}
+ const items=f.clips.map((r,i)=>({r,i,c:folderClip(r)})),ok=items.filter(x=>x.c);
+ $('folderBody').innerHTML=`<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:8px;border-bottom:1px solid var(--line)">
+   <input class="txt" id="fName" value="${esc(f.name)}" style="flex:1;min-width:160px;font-weight:600">
+   <span class="faint">${f.owner?'by '+esc(f.owner)+' · ':''}${f.clips.length} clip${f.clips.length===1?'':'s'}${ok.length?' · '+fmt(ok.reduce((a,x)=>a+x.c.end-x.c.start,0)):''}</span>
+   <button class="bt grn sm" id="fPlay" ${ok.length?'':'disabled'}>▶ Play folder</button><button class="bt gry sm" id="fDel">Delete folder</button></div>`+
+  (items.length?items.map(({r,i,c})=>{
+   if(!c)return `<div class="fclip gone"><span class="mono faint">${i+1}</span><span class="faint" style="grid-column:2/6">Clip no longer available — its practice or possession was deleted${cloud?'':', or the practice is only in the cloud'}.</span><span class="rowbtns"><button class="x" data-rm="${esc(r.id)}" title="Remove">×</button></span></div>`;
+   const what=c.P?`<span class="tm" style="${TEAMCSS[c.team]}"></span> poss #${c.P.n} · <b>${c.pt} pts</b> ${c.E.slice(0,4).map(e=>chip(c.s,e,null)).join('')}${c.E.length>4?' …':''}`:c.e?chip(c.s,c.e,null):'<span class="chip">Moment</span>';
+   return `<div class="fclip" data-key="${esc(c.key)}" data-ci="${i}"><span class="mono">${i+1}</span><span title="${esc(practiceLabel(c.s))}">${esc(prettyDate(c.s.date))}<br><span class="faint" style="font-size:10px">${esc(c.s.name||'')}</span></span><span class="mono ftime">${fmt(c.start)}–${fmt(c.end)}</span><span class="fwhat">${what}</span>
+    <input class="txt" data-note="${esc(r.id)}" value="${esc(r.note||'')}" placeholder="Note…"><span class="rowbtns"><button class="x" data-mv="-1" data-rid="${esc(r.id)}" title="Move up">↑</button><button class="x" data-mv="1" data-rid="${esc(r.id)}" title="Move down">↓</button><button class="x" data-rm="${esc(r.id)}" title="Remove from folder">×</button></span></div>`}).join('')
+  :'<div class="faint" style="padding:12px">Empty folder. Press ☆ on any clip, or <b>☆ Save this play</b> under the video, and pick this folder.</div>');
+ markFolderPlaying()}
+$('folderList').addEventListener('click',e=>{const r=e.target.closest('[data-fid]');if(!r)return;curFolder=r.dataset.fid;LS.set('curFolder',curFolder);stopQueue();renderFolders();renderTimeline()});
+$('folderBody').addEventListener('click',async e=>{const f=curF();if(!f)return;
+ if(e.target.closest('input'))return;
+ if(e.target.id==='fPlay'){playQueue(f.clips.map(folderClip).filter(Boolean),0,false);return}
+ if(e.target.id==='fDel'){if(!confirm(`Delete the folder “${f.name}”${f.owner&&f.owner!==coach()?` (made by ${f.owner})`:''}? The clips stay in their practices.`))return;
+  folders=folders.filter(x=>x!==f);curFolder=null;LS.del('curFolder');storeFolders();clearTimeout(folderTimers[f.id]);
+  if(cloud)try{await cloudFetch(`folders?id=eq.${encodeURIComponent(f.id)}`,{method:'DELETE'})}catch(err){st('Cloud delete failed — '+err.message)}
+  renderFolders();st(`Deleted folder “${f.name}”`);return}
+ const rm=e.target.closest('[data-rm]');if(rm){f.clips=f.clips.filter(r=>r.id!==rm.dataset.rm);touchFolder(f);return}
+ const mv=e.target.closest('[data-mv]');if(mv){const i=f.clips.findIndex(r=>r.id===mv.dataset.rid),j=i+ +mv.dataset.mv;if(i<0||j<0||j>=f.clips.length)return;[f.clips[i],f.clips[j]]=[f.clips[j],f.clips[i]];touchFolder(f);return}
+ const row=e.target.closest('.fclip[data-ci]');if(row){const list=f.clips.map(folderClip),c=list[+row.dataset.ci];if(c)playQueue(list.filter(Boolean),list.filter(Boolean).indexOf(c),true)}});
+$('folderBody').addEventListener('change',e=>{const f=curF();if(!f)return;
+ if(e.target.id==='fName'){const v=e.target.value.trim();if(v){f.name=v;e.target.blur();touchFolder(f)}return}
+ const n=e.target.dataset.note;if(n){const r=f.clips.find(x=>x.id===n);if(r){r.note=e.target.value.trim();e.target.blur();touchFolder(f)}}});
+$('folderBody').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches('input'))e.target.blur()});
+$('nfCreate').onclick=()=>{const name=$('nfName').value.trim();if(!name){$('nfName').focus();return}newFolder(name);$('nfName').value='';$('nfName').blur();renderFolders();st(`Created folder “${name}” — save clips into it with ☆`)};
+$('nfName').addEventListener('keydown',e=>{if(e.key==='Enter')$('nfCreate').click()});
+$('coachName').addEventListener('change',()=>{LS.set('coachName',coach());$('coachName').blur();renderFolders()});
+$('fShow').addEventListener('change',()=>{$('fShow').blur();renderFolders()});
+// Cloud: one row per folder; the newer copy wins, and a folder deleted elsewhere disappears here too.
+function queueFolderCloud(f){if(!cloud)return;clearTimeout(folderTimers[f.id]);folderTimers[f.id]=setTimeout(()=>pushFolder(f),1200)}
+async function pushFolder(f){delete folderTimers[f.id];if(!cloud||!folders.includes(f))return;
+ try{await cloudFetch('folders',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify([{id:f.id,name:f.name,owner:f.owner||null,clips:f.clips,updated_at:f.updated||new Date().toISOString()}])});f.synced=true;storeFolders()}
+ catch(err){st('Folder sync failed — '+err.message+(/PGRST205|folders/.test(err.message)?' — copy the setup SQL from ☁ Cloud and run it again':''))}}
+async function loadFolders(){if(!cloud)return;
+ try{const rows=await cloudFetch('folders?select=id,name,owner,clips,updated_at'),ids=new Set(rows.map(r=>r.id)),T=x=>Date.parse(x||0)||0;
+  folders=folders.filter(f=>ids.has(f.id)||!f.synced);
+  rows.forEach(r=>{const cf={id:r.id,name:r.name,owner:r.owner||'',clips:r.clips||[],updated:r.updated_at,created:r.updated_at,synced:true},f=folders.find(x=>x.id===r.id);
+   if(!f)folders.push(cf);else if(T(cf.updated)>T(f.updated))Object.assign(f,cf);else f.synced=true});
+  folders.filter(f=>!f.synced).forEach(pushFolder);storeFolders();if(tab==='folders')renderFolders()}
+ catch(err){if(/PGRST205|folders/.test(err.message))st('Saved-clip folders need the updated setup SQL — copy it from ☁ Cloud and run it in Supabase.')}}
 
 // ---------- Shot chart component (stat sheet + player profiles) ----------
 const COURT=[...$('court').children].filter(n=>n.id!=='pin').map(n=>n.outerHTML).join('');
@@ -1198,7 +1374,7 @@ function drawAll(){drawPlayers();drawLineups();fillShooter();render()}
 loadLocalLib();
 {const cur=LS.get('current'),s=cur&&lib.get(cur);if(s)S=s.s}
 fillFilters();
-if(cloud){cloudState('on','ok');refreshCloud();loadRoster()}
+if(cloud){cloudState('on','ok');refreshCloud();loadRoster();loadFolders()}
 const savedTab=LS.get('tab');
 setTab(savedTab==='players'&&lib.size?'players':savedTab==='practices'||(!lib.size&&savedTab!=='code')?'practices':'code');
 setInterval(tick,50);
