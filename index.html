@@ -250,7 +250,7 @@ body[data-tab=review] .chartgrid{grid-template-columns:minmax(0,1fr) minmax(0,1f
  <div class="blk">
   <div class="hd">GAMES</div>
   <div class="gimport" id="gDrop">
-   <div><b>Import a game</b> <span class="faint">— Sports Reference box score exports (<i>Share &amp; Export → Get as Excel Workbook</i>), or .xlsx / .csv with the same columns. Drop the <b>Basic</b> and <b>Advanced</b> files together, or one at a time.</span></div>
+   <div><b>Import a game</b> <span class="faint">— box score spreadsheets (.xls, .xlsx or .csv). Drop the <b>Basic</b> and <b>Advanced</b> files together, or one at a time.</span></div>
    <label class="bt grn sm" style="display:inline-flex;align-items:center">Choose files<input type="file" id="gFile" accept=".xls,.xlsx,.csv,.htm,.html" multiple hidden></label>
   </div>
   <div id="gPreview" class="hidden"></div>
@@ -1346,8 +1346,8 @@ async function loadFolders(){if(!cloud)return;
   folders.filter(f=>!f.synced).forEach(pushFolder);storeFolders();if(tab==='folders')renderFolders()}
  catch(err){if(/PGRST205|folders/.test(err.message))st('Saved-clip folders need the updated setup SQL — copy it from ☁ Cloud and run it in Supabase.')}}
 
-// ---------- Games: imported box scores (Sports Reference basic + advanced exports) ----------
-// Column keys follow Sports Reference's data-stat names, so their .xls exports map exactly; plain .xlsx/.csv map by header text.
+// ---------- Games: imported box scores (basic + advanced sheets) ----------
+// Columns are matched by their data-stat names when the file has them, otherwise by header text.
 const G_BASIC=[['mp','MP','Minutes Played',0],['fg','FG','Field Goals',0],['fga','FGA','Field Goal Attempts',0],['fg_pct','FG%','Field Goal Percentage',3],
  ['fg2','2P','2-Point Field Goals',0],['fg2a','2PA','2-Point Field Goal Attempts',0],['fg2_pct','2P%','2-Point Field Goal Percentage',3],
  ['fg3','3P','3-Point Field Goals',0],['fg3a','3PA','3-Point Field Goal Attempts',0],['fg3_pct','3P%','3-Point Field Goal Percentage',3],
@@ -1371,7 +1371,7 @@ function boxFromRows(keys,rows,ids){const out={kind:keys.includes('ts_pct')||key
   if(Object.values(stats).every(x=>x==null))return; // header repeats, "Did Not Play", blank rows
   if(/(school|team)\s+totals?/i.test(name)){out.totals=stats;return}
   out.players.push({key:slugName(name),srid:ids&&ids[i]||null,name,starter,stats})});
- // Sports Reference's export drops the "Reserves" divider row; the first five listed are always the starters.
+ // Some exports drop the "Reserves" divider row; the first five listed are always the starters.
  if(starter&&out.players.length>5)out.players.forEach((p,i)=>{p.starter=i<5});
  return out}
 function parseHtmlBox(text){const doc=new DOMParser().parseFromString(text,'text/html');
@@ -1446,7 +1446,7 @@ function renderGames(){const list=gamesSorted(),n=gSel.size,w=games.filter(g=>gR
    <td class="n">${r?`<span class="wl ${r.toLowerCase()}">${r}</span> `:''}${g.ptsFor??'–'}–${g.ptsAgainst??'–'}</td><td class="n">${g.players.length}</td>
    <td class="n">${g.totals.basic||g.players.some(p=>p.basic)?'<span class="badge">basic</span>':''}${g.totals.adv||g.players.some(p=>p.adv)?'<span class="badge">advanced</span>':''}</td>
    <td class="n"><label class="bt gry sm" style="display:inline-flex;align-items:center" title="Attach the other sheet">＋ sheet<input type="file" data-gattach accept=".xls,.xlsx,.csv,.htm,.html" hidden></label> <button class="x" data-gdel title="Delete game">×</button></td></tr>`}).join('')
-  :'<tr><td class="faint" style="padding:16px">No games yet. Export the Basic and Advanced box scores from Sports Reference and drop both files above.</td></tr>';
+  :'<tr><td class="faint" style="padding:16px">No games yet. Drop the Basic and Advanced box score files above.</td></tr>';
  const all=$('gAllBox');if(all)all.indeterminate=n>0&&n<list.length;
  renderGameDetail()}
 $('gamesView').addEventListener('change',e=>{
@@ -1476,7 +1476,7 @@ function gameBoxHTML(g){const r=gResult(g),sec=(cols,kind,lab)=>{const ps=g.play
    ${tot?`<tr class="tot"><td style="text-align:left">School Totals</td>${cols.map(([k,,,d])=>`<td>${fmtS(tot[k],d)}</td>`).join('')}</tr>`:''}</table></div>`};
  return `<div class="ghead"><b>${r?`<span class="wl ${r.toLowerCase()}">${r}</span> `:''}${g.ptsFor??'–'}–${g.ptsAgainst??'–'} ${esc(gameLabel(g))}</b><span class="muted">${esc(prettyDate(g.date))}</span></div>`+
   sec(G_BASIC,'basic','Basic Box Score Stats')+sec(G_ADV,'adv','Advanced Box Score Stats')}
-// TS% uses 0.475·FTA, matching Sports Reference's college numbers.
+// TS% uses 0.475·FTA, the usual college formula.
 // Combined across games: counting stats summed, shooting %s / TS% / eFG% / 3PAr / FTr recomputed exactly,
 // the rate stats (ORB%, USG%, ORtg …) averaged by minutes — they need team + opponent data a player box can't rebuild.
 const EXACT={fg_pct:['fg','fga'],fg2_pct:['fg2','fg2a'],fg3_pct:['fg3','fg3a'],ft_pct:['ft','fta']};

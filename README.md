@@ -31,7 +31,7 @@ Notes on video sources:
 
 Import game box scores and the site builds the game.
 
-- On the box score page at Sports Reference, use **Share & Export → Get as Excel Workbook** on both the **Basic** and the **Advanced** table. Drop both files into **Games → Choose files**, together or one at a time. Re-saved `.xlsx` and `.csv` files with the same columns work too.
+- Drop the **Basic** and **Advanced** box score files into **Games → Choose files**, together or one at a time. Re-saved `.xlsx` and `.csv` files with the same columns work too.
 - The app works out which sheet is which from the columns, matches players across the two by name, takes our score from **School Totals**, and estimates the opponent's score from team ORtg/DRtg. Add the date and opponent, check the scores, and **Save game**. Use **＋ sheet** to attach a sheet you didn't have at first.
 - Click a game to see its full basic and advanced box score (starters, reserves, totals). Click a column header to sort.
 - Tick several games to combine them, as **Per game** or **Totals**. Counting stats are summed, and FG%/3P%/FT%, TS% and eFG%, 3PAr and FTr are recomputed exactly. ORB%, USG%, ORtg and the other rate stats need team and opponent data that player box scores don't have, so they show as a minutes-weighted average of each game (in grey).
