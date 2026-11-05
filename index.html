@@ -80,7 +80,7 @@ body:not([data-tab=code]) .code-only{display:none!important}
 #ph{position:absolute;top:0;bottom:0;width:2px;background:var(--accent);pointer-events:none;z-index:2}
 .clips{max-height:360px;overflow:auto}
 body:is([data-tab=review],[data-tab=library]) .clips{max-height:520px}
-.clip{display:grid;grid-template-columns:44px 58px 104px 40px minmax(0,1fr) 40px;gap:6px;align-items:center;padding:5px 8px;border-bottom:1px solid var(--line);cursor:pointer}
+.clip{display:grid;grid-template-columns:44px 58px 104px 40px minmax(0,1fr) auto;gap:6px;align-items:center;padding:5px 8px;border-bottom:1px solid var(--line);cursor:pointer}
 .clip:hover{background:var(--hover)}
 .clip.playing{background:var(--playing)}
 .pgroup{padding:4px 8px;background:var(--th);color:var(--muted);font-size:11px;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:1}
@@ -93,7 +93,7 @@ body:is([data-tab=review],[data-tab=library]) .clips{max-height:520px}
 .x:hover{color:var(--bad)}
 .filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:8px;border-bottom:1px solid var(--line)}
 .banner{display:flex;gap:8px;align-items:center;padding:6px 8px;background:var(--banner);border-bottom:1px solid var(--banner-edge);font-size:12px}
-@media (max-width:640px){.filters{grid-template-columns:repeat(2,minmax(0,1fr))}.clip{grid-template-columns:36px 50px 90px minmax(0,1fr) 40px}.clip .dur{display:none}}
+@media (max-width:640px){.filters{grid-template-columns:repeat(2,minmax(0,1fr))}.clip{grid-template-columns:36px 50px 90px minmax(0,1fr) auto}.clip .dur{display:none}}
 .log{max-height:240px;overflow:auto;font-size:11px;line-height:1.7}
 .log div{display:flex;gap:8px;align-items:center;cursor:pointer;padding:0 4px}
 .log div:hover{background:var(--hover)}
@@ -169,6 +169,9 @@ a.plink{color:var(--link);cursor:pointer;text-decoration:none}a.plink:hover{text
 .savepop{position:absolute;z-index:60;background:var(--card);border:1px solid var(--input-edge);border-radius:6px;padding:8px;box-shadow:0 6px 20px rgba(0,0,0,.4);width:270px;display:flex;flex-direction:column;gap:4px}
 .savepop .bt{text-align:left;height:28px}
 .rowbtns{display:flex;gap:8px;justify-content:flex-end;align-items:center}
+.luline{font-size:10px;color:var(--faint);margin-top:2px;font-family:ui-monospace,Menlo,monospace}
+.lued{color:var(--accent)}
+#luPop select{height:26px;font-size:12px}
 .star:hover{color:#F7D448}
 .pm-pos{color:var(--good);font-weight:600}.pm-neg{color:var(--bad);font-weight:600}
 /* player profiles */
@@ -458,6 +461,15 @@ body[data-tab=review] .chartgrid{grid-template-columns:minmax(0,1fr) minmax(0,1f
  <div class="faint" style="font-size:11px">Save clip to…</div>
  <div id="savePopList" style="display:flex;flex-direction:column;gap:3px;max-height:220px;overflow:auto"></div>
  <div style="display:flex;gap:4px;margin-top:4px"><input id="spNew" class="txt" style="flex:1;min-width:0" placeholder="New folder name"><button class="bt grn sm" id="spCreate">Create</button></div>
+</div>
+
+<!-- Per-play lineup editor -->
+<div id="luPop" class="savepop hidden">
+ <div class="faint" style="font-size:11px">On the floor for <b id="luPopT"></b></div>
+ <div id="luPopGrid" style="display:flex;flex-direction:column;gap:3px"></div>
+ <div class="faint" style="font-size:10px">Changes this play only — the plays before and after keep their lineups.</div>
+ <div id="luMsg" style="color:#e66;font-size:11px"></div>
+ <div style="display:flex;gap:4px;margin-top:2px"><button class="bt grn sm" id="luSave" style="flex:1">Save</button><button class="bt gry sm" id="luReset" title="Go back to what the Lineups box / subs said">Use logged</button><button class="bt gry sm" id="luCancel">Cancel</button></div>
 </div>
 
 <!-- Shot popup (S) -->
@@ -784,12 +796,13 @@ function lineupFn(s){const byId=s.events.filter(e=>e.k==='sub').sort((a,b)=>a.id
  return t=>{let L=start;for(const e of byT){if(e.t>t)break;L=snap.get(e).aft}return L}}
 const LINEUP_LAG=2; // a sub logged up to 2s after a possession starts still counts for that possession (coder reaction time)
 const floorCache=new Map();
-function floorData(s){const key=`${s.updated}|${s.events.length}|${isLoaded(s)?Math.round(dur()):0}`,c=floorCache.get(s.id);if(c&&c.key===key)return c.v;
- const at=lineupFn(s),inP=new Set();
+function floorData(s){const key=`${s.updated}|${s.events.length}|${s.luRev||0}|${isLoaded(s)?Math.round(dur()):0}`,c=floorCache.get(s.id);if(c&&c.key===key)return c.v;
+ const at=lineupFn(s),inP=new Set(),markers=new Map(s.events.filter(e=>e.k==='poss').map(e=>[e.id,e]));
  const poss=possessions(s).map(P=>{const E=possEvents(s,P),pt={GOLD:0,BLUE:0};E.forEach(e=>{inP.add(e);if(e.team in pt)pt[e.team]+=pts(e)});
   // A possession's set = the last offense / defense tag inside it.
   const sets={off:'',def:''};s.events.filter(e=>e.k==='set'&&inPoss(P,e.t)).sort((a,b)=>a.t-b.t||a.id-b.id).forEach(e=>{sets[e.side]=e.set});
-  return{P,pt,E,sets,L:at(Math.min(P.start+LINEUP_LAG,P.end!=null?(P.start+P.end)/2:Infinity))}});
+  const mk=markers.get(P.id),custom=!!(mk&&mk.lineup);
+  return{P,pt,E,sets,custom,L:custom?cloneL(mk.lineup):at(Math.min(P.start+LINEUP_LAG,P.end!=null?(P.start+P.end)/2:Infinity))}});
  const v={poss,byId:new Map(poss.map(x=>[x.P.id,x])),loose:codedEvents(s).filter(e=>!inP.has(e)&&pts(e)).map(e=>({e,L:at(e.t)}))};
  floorCache.set(s.id,{key,v});return v}
 const OTHER={GOLD:'BLUE',BLUE:'GOLD'};
@@ -894,8 +907,8 @@ const evMatch=(e,F)=>(!F.pl||e.p===F.pl)&&(!F.tag||eventTags(e).includes(F.tag))
 function clipList(F0){
  const F=F0||filters(),lead=num('padPoss',1),pre=num('padPre',4),post=num('padPost',2);
  return viewSessions().flatMap(s=>{const fd=floorData(s);
-  if(F.mode==='poss')return fd.poss.map(({P,E,sets})=>
-    ({key:s.id+':p'+P.id,s,P,E,sets,pt:possPts(P,E),team:P.team,start:Math.max(0,P.start-lead),end:P.end??Math.max(P.start+30,(E.at(-1)?.t??0)+5),t:P.start}))
+  if(F.mode==='poss')return fd.poss.map(({P,E,sets,L,custom})=>
+    ({key:s.id+':p'+P.id,s,P,E,sets,L,custom,pt:possPts(P,E),team:P.team,start:Math.max(0,P.start-lead),end:P.end??Math.max(P.start+30,(E.at(-1)?.t??0)+5),t:P.start}))
    .filter(c=>(!F.team||c.team===F.team)&&(!F.set||setMatch(c.sets,F.set))&&(!F.on||onFloor(s,c.P,F.on))&&(!(F.pl||F.tag)||c.E.some(e=>evMatch(e,F)))
     &&(!F.out||(F.out==='score'?c.pt>0:F.out==='empty'?c.pt===0:c.E.some(e=>e.stat==='TO'))));
   return codedEvents(s).sort((a,b)=>a.t-b.t).filter(e=>(!F.team||e.team===F.team)&&evMatch(e,F)&&(!F.set||(x=>!!x&&setMatch(x.sets,F.set))(fd.poss.find(y=>inPoss(y.P,e.t)))))
@@ -904,6 +917,28 @@ function chip(s,e,F){const cls=(e.k==='shot'||e.k==='ft')?(e.make?'mk':'ms'):'',
  return `<span class="chip ${cls}${hl}" data-sid="${esc(s.id)}" data-seek="${e.t}" title="${esc(pname(e.p))} · jump to ${fmt(e.t)}">${esc(evLabel(e))} ${esc(pshort(e.p))}</span>`}
 function filterSummary(F){const parts=[];if(F.set)parts.push(setLabel(F.set));if(F.on)parts.push(F.on.split(',').map(pname).join(' + ')+' on floor');if(F.pl)parts.push(pname(F.pl));if(F.team)parts.push(F.team);if(F.tag)parts.push(TAG_NAME[F.tag]||F.tag);
  if(F.out)parts.push({score:'scored',empty:'empty',to:'turnover'}[F.out]);return parts.join(' · ')}
+// Lineup shown on each possession row; ✎ marks one edited by hand for that play only.
+function luLine(c){const side=T=>`<span style="${TEAMCSS[T]};padding:0 4px;border-radius:2px;font-size:9px">${T[0]}</span> ${c.L[T].filter(Boolean).map(pshort).join(' ')||'<span class="faint">—</span>'}`;
+ return `<div class="luline">${side('GOLD')} &nbsp; ${side('BLUE')}${c.custom?' <span class="lued" title="Lineup edited for this play only">✎ edited</span>':''}</div>`}
+let luPending=null;
+function openLu(pid,anchor){const x=floorData(S).byId.get(pid);if(!x)return;luPending=pid;
+ const opts=cur=>'<option value="">— empty —</option>'+orderIds([...activeIds(),...S.lineup.GOLD,...S.lineup.BLUE,...x.L.GOLD,...x.L.BLUE]).map(r=>`<option value="${esc(r)}" ${r===cur?'selected':''}>${esc(pname(r))}</option>`).join('');
+ $('luPopT').textContent=`Possession #${x.P.n} · ${fmt(x.P.start)}`;
+ $('luPopGrid').innerHTML=['GOLD','BLUE'].map(T=>`<div class="faint" style="font-size:10px;margin-top:4px">${T}</div>`+[0,1,2,3,4].map(i=>`<select class="txt" data-lt="${T}" data-li="${i}" style="${TEAMCSS[T]}">${opts(x.L[T][i]||'')}</select>`).join('')).join('');
+ $('luReset').classList.toggle('hidden',!x.custom);$('luMsg').textContent='';
+ const pop=$('luPop'),r=anchor.getBoundingClientRect();pop.classList.remove('hidden');
+ pop.style.left=Math.max(8,Math.min(window.scrollX+r.right-270,window.scrollX+document.documentElement.clientWidth-280))+'px';pop.style.top=(window.scrollY+r.bottom+4)+'px'}
+function closeLu(){$('luPop').classList.add('hidden');luPending=null}
+function setPossLineup(pid,L){const mk=S.events.find(e=>e.id===pid&&e.k==='poss');if(!mk)return;
+ if(L)mk.lineup=L;else delete mk.lineup;S.luRev=(S.luRev||0)+1;save();render();
+ const n=floorData(S).byId.get(pid)?.P.n;st(L?`Lineup changed for possession #${n} only`:`Possession #${n} back to the logged lineup`)}
+$('luSave').onclick=()=>{if(luPending==null)return;const L={GOLD:[],BLUE:[]};document.querySelectorAll('#luPopGrid [data-lt]').forEach(s=>{L[s.dataset.lt][+s.dataset.li]=s.value});
+ const all=[...L.GOLD,...L.BLUE].filter(Boolean),dup=all.find((id,i)=>all.indexOf(id)!==i);
+ if(dup){$('luMsg').textContent=`${pname(dup)} is in the lineup twice`;return}
+ setPossLineup(luPending,L);closeLu()};
+$('luReset').onclick=()=>{if(luPending!=null)setPossLineup(luPending,null);closeLu()};
+$('luCancel').onclick=closeLu;
+document.addEventListener('mousedown',e=>{if(!$('luPop').classList.contains('hidden')&&!e.target.closest('#luPop,[data-lu]'))closeLu()});
 function renderClips(){
  const F=filters(),L=clipList(),playing=queue&&queue[qi]&&queue[qi].key,poss=F.mode==='poss',multi=viewSessions().length>1,canDel=tab==='code';
  $('fOutWrap').style.opacity=$('fOnWrap').style.opacity=poss?1:.4;$('fOut').disabled=$('fOn').disabled=!poss;
@@ -916,12 +951,13 @@ function renderClips(){
  $('clips').innerHTML=L.length?L.map((c,i)=>{
   const head=multi&&c.s.id!==lastSid?`<div class="pgroup">${esc(practiceLabel(c.s))}${c.s.source?'':' — no video linked'}</div>`:'';lastSid=c.s.id;
   const tm=`<span><span class="tm" style="${TEAMCSS[c.team]||''}"></span> ${c.team?c.team[0]:''}</span>`;
-  const body=poss?`<span><b>${c.pt} pts</b> ${setChips(c.sets)}${c.E.map(e=>chip(c.s,e,F)).join('')||'<span class="faint">no events</span>'}</span>`:`<span>${chip(c.s,c.e,F)}${c.e.grade?`<span class="chip">${esc(c.e.grade)}</span>`:''}</span>`;
-  const id=poss?`#${c.P.n}`:`${i+1}`,delBtn=`<span class="rowbtns"><button class="x star" data-save="${i}" title="Save to a folder">☆</button>${canDel?`<button class="x" data-del="${poss?c.P.id:c.e.id}" title="${poss?'Delete possession marker':'Delete event'}">×</button>`:''}</span>`;
+  const body=poss?`<span><b>${c.pt} pts</b> ${setChips(c.sets)}${c.E.map(e=>chip(c.s,e,F)).join('')||'<span class="faint">no events</span>'}${luLine(c)}</span>`:`<span>${chip(c.s,c.e,F)}${c.e.grade?`<span class="chip">${esc(c.e.grade)}</span>`:''}</span>`;
+  const id=poss?`#${c.P.n}`:`${i+1}`,delBtn=`<span class="rowbtns">${poss&&canDel?`<button class="x lub" data-lu="${c.P.id}" title="Change who was on the floor for this play">👥</button>`:''}<button class="x star" data-save="${i}" title="Save to a folder">☆</button>${canDel?`<button class="x" data-del="${poss?c.P.id:c.e.id}" title="${poss?'Delete possession marker':'Delete event'}">×</button>`:''}</span>`;
   return `${head}<div class="clip${c.key===playing?' playing':''}" data-i="${i}"><span class="mono">${id}</span>${tm}<span class="mono">${fmt(c.start)}–${fmt(c.end)}</span><span class="mono dur faint">${(c.end-c.start).toFixed(1)}s</span>${body}${delBtn}</div>`}).join('')
  :`<div class="faint" style="padding:12px">${viewSessions().some(s=>s.events.length)?'No clips match these filters.':tab==='code'?'Press P (or GOLD / BLUE POSSESSION) while the video plays — each press starts a new clip and ends the previous one.':'No coded possessions in these practices yet.'}</div>`;
  markActiveCell();markFolderPlaying()}
-$('clips').addEventListener('click',e=>{const sv=e.target.closest('[data-save]');if(sv){const c=clipList()[+sv.dataset.save];if(c)openSave(clipRef(c),sv);return}
+$('clips').addEventListener('click',e=>{const lu=e.target.closest('[data-lu]');if(lu){openLu(+lu.dataset.lu,lu);return}
+ const sv=e.target.closest('[data-save]');if(sv){const c=clipList()[+sv.dataset.save];if(c)openSave(clipRef(c),sv);return}
  const d=e.target.closest('[data-del]');if(d){del(+d.dataset.del);return}
  const sk=e.target.closest('[data-seek]');if(sk){jumpTo(getSess(sk.dataset.sid),+sk.dataset.seek-num('padPre',4));return}
  const row=e.target.closest('.clip');if(row)playQueue(clipList(),+row.dataset.i,true)});

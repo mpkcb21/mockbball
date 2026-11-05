@@ -131,6 +131,7 @@ Who's on the floor comes from the **Lineups** section while coding, so sub playe
 - **+/−** in the box score is points for minus points against while that player was on the floor, across the practices in view. **On** is the number of possessions they were on the floor (offense + defense), and **Net** is offensive points per possession minus defensive points per possession. Hover Net for the split.
 - Click a player's **+/−** or **On** to watch every possession they were on the floor for. The Clips panel also has an **On floor** filter.
 - A sub logged up to 2 seconds after a possession starts still counts for that possession, which allows for coder reaction time.
+- Each possession row shows who was on the floor (Gold and Blue). If one play's lineup is wrong, press **👥** on that row in the Code tab and change it. The change applies to that play only; plays before and after keep their lineups. The row is marked **✎ edited**, +/− and lineup combinations use the new five, and **Use logged** in the popup puts it back.
 - **Lineup combinations** (collapsed under the box score) show how 5-man lineups, 3-man groups or 2-man pairs did together: possessions, offensive and defensive points per possession, net, and +/−. Click a group's numbers to watch those possessions.
 - Player profiles show career +/− and net rating too.
 - Hotkeys in Review mode only control video (Space, arrows, `[ ]`), so nothing gets coded by accident.
