@@ -27,6 +27,17 @@ Notes on video sources:
 - **YouTube:** for live streams, turn on DVR in the stream settings so you can scrub back. The stream must be Public or Unlisted.
 - **Local files** never leave your computer. Reviewing a file-based practice needs that file loaded in this visit; the app tells you which file to load.
 
+## Games tab
+
+Import game box scores and the site builds the game.
+
+- On the box score page at Sports Reference, use **Share & Export → Get as Excel Workbook** on both the **Basic** and the **Advanced** table. Drop both files into **Games → Choose files**, together or one at a time. Re-saved `.xlsx` and `.csv` files with the same columns work too.
+- The app works out which sheet is which from the columns, matches players across the two by name, takes our score from **School Totals**, and estimates the opponent's score from team ORtg/DRtg. Add the date and opponent, check the scores, and **Save game**. Use **＋ sheet** to attach a sheet you didn't have at first.
+- Click a game to see its full basic and advanced box score (starters, reserves, totals). Click a column header to sort.
+- Tick several games to combine them, as **Per game** or **Totals**. Counting stats are summed, and FG%/3P%/FT%, TS% and eFG%, 3PAr and FTr are recomputed exactly. ORB%, USG%, ORtg and the other rate stats need team and opponent data that player box scores don't have, so they show as a minutes-weighted average of each game (in grey).
+- When a box score name matches a name in your roster, it links to that player's profile, which then shows their game log and per-game averages.
+- Games sync through Supabase (`games` table) with the rest of the staff's data. Imported box scores contain real names, so they're kept in the browser that imported them and in your Supabase project, never in the site's code.
+
 ## Roster (names stay private)
 
 Players start as placeholders, **Player 1–10**. Real names live only in your Supabase `players` table, so nobody sees them without the project key. They aren't in the page, the public site, or saved coding files. Only player IDs are stored with the stats.
@@ -35,6 +46,16 @@ Players start as placeholders, **Player 1–10**. Real names live only in your S
 - **Rename** a placeholder (e.g. Player 3 → Jordan Smith, #23), and every stat already logged for Player 3 now shows as Jordan Smith.
 - **Add players** beyond ten, and untick **Active** to hide someone from lineups without losing their history.
 - Without the key, everyone shows as Player 1–10, or "Unknown player" for players that were added in the cloud.
+
+## Sets (offense and defense)
+
+Tag what each possession ran, and the app tracks how well it works.
+
+- In the **Code** tab, the **SETS** block lists your offensive and defensive sets. Click **✎ edit sets** to rename, add, reorder or remove them. The order sets the hotkey number. The list is shared with the staff when ☁ Cloud is connected.
+- While a possession is running, press **⇧ Shift + 1–9** for the offense's set and **⌥ Option/Alt + 1–9** for the defense's, or click the buttons. Tagging again replaces the set, and pressing the same one again removes it.
+- **Offensive sets** in the stat sheet: possessions, points, **PPP** (average points per possession), scoring %, turnover %, and FG.
+- **Defensive sets**: possessions, **stops** and **stop %** (possessions with 0 points allowed), **turnovers forced** and TO %, and points allowed per possession.
+- Click any number to watch those possessions. The **Library** gets a folder per set: offensive sets also get a **shots** folder holding every shot that set created, and defensive sets get **stops** and **turnovers forced** folders. The Clips panel has a **Set** filter, and possession rows show their sets.
 
 ## Library tab
 
@@ -86,6 +107,7 @@ The full key is in the top-right of the app. Typical flow: **number → letter**
 | S | Shot chart | + / X | Made / missed FT |
 | Space | Play / pause | ← → (⇧) | Back / forward 3s (10s) |
 | [ ] | Prev / next clip | ⌘/Ctrl Z | Undo |
+| ⇧ 1–9 | Offensive set | ⌥ 1–9 | Defensive set |
 
 In the shot chart: click the spot, then `0–9` shooter, `+`/`−` make/miss, `Enter` to log, `Esc` to close.
 

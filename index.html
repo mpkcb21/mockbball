@@ -32,7 +32,8 @@ body:is([data-tab=review],[data-tab=library],[data-tab=folders]) .main{grid-temp
 body:is([data-tab=review],[data-tab=library],[data-tab=folders]) :is(#codeWin,#keysBlk){display:none}
 body:not([data-tab=library]) #libPanel,body:not([data-tab=folders]) #folderPanel{display:none}
 body:is([data-tab=library],[data-tab=folders]) #statsBlk,body[data-tab=folders] #clipsBlk{display:none}
-body[data-tab=practices] .main,body[data-tab=players] .main,body[data-tab=players] #statsBlk{display:none}
+body[data-tab=practices] .main,body[data-tab=players] .main,body[data-tab=players] #statsBlk,body[data-tab=games] .main,body[data-tab=games] #statsBlk{display:none}
+body:not([data-tab=games]) #gamesView{display:none}
 body:not([data-tab=players]) #playersView{display:none}
 body:not([data-tab=practices]) #practicesView{display:none}
 body:not([data-tab=code]) .code-only{display:none!important}
@@ -121,6 +122,34 @@ dialog{border:2px solid var(--edge);border-radius:8px;padding:14px;max-width:680
 dialog::backdrop{background:rgba(0,0,0,.5)}
 dialog pre{background:var(--pre);border:1px solid var(--line);padding:8px;font-size:11px;overflow:auto;white-space:pre;color:var(--text);max-height:320px}
 .sec{font-size:12px;color:var(--muted);margin:8px 0 4px}
+/* games */
+.gimport{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px;border-bottom:1px solid var(--line)}
+.gimport.drag{outline:3px dashed #F7D448;outline-offset:-6px}
+.gprev{padding:10px;border-bottom:1px solid var(--line);background:var(--hover)}
+.gform{display:grid;grid-template-columns:140px 1fr 120px 90px 90px auto;gap:6px;align-items:end;margin-top:8px}
+@media (max-width:800px){.gform{grid-template-columns:1fr 1fr}}
+.wl{display:inline-block;min-width:18px;text-align:center;font-weight:700;border-radius:3px;padding:0 4px}
+.wl.w{background:var(--mk);color:var(--good)}.wl.l{background:var(--ms);color:var(--bad)}
+.st tr.sub td{background:var(--th);color:var(--muted);font-weight:600;text-align:left}
+.st tr.tot td{font-weight:700;border-top:2px solid var(--edge)}
+.st th.sortable{cursor:pointer}.st th.sortable:hover{color:var(--text)}.st th.sorted{color:var(--text);text-decoration:underline}
+.ghead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.ghead b{font-size:18px}
+.approx{color:var(--faint)}
+a.plink{color:var(--link);cursor:pointer;text-decoration:none}a.plink:hover{text-decoration:underline}
+/* sets */
+.setrow{display:grid;grid-template-columns:52px minmax(0,1fr);border-bottom:1px solid var(--line)}
+.setlbl{display:flex;flex-direction:column;justify-content:center;align-items:center;font-size:11px;font-weight:600;color:var(--muted);border-right:1px solid var(--line)}
+.setlbl small{font-weight:400;font-size:9px;color:var(--faint)}
+.setbtns{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr))}
+.setbtns .bt{height:34px;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.setbtns .bt small{display:inline;margin-right:4px}
+.setbtns .bt.on{background:var(--strong);color:var(--strong-text);outline:2px solid #F7D448;outline-offset:-2px}
+.chip.set{background:transparent;border-style:dashed;color:var(--muted)}
+.pbcols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pbcols .row{display:flex;gap:4px;margin-bottom:4px;align-items:center}
+.pbcols .row .k{width:16px;color:var(--faint);font-size:11px;text-align:right}
+.setTbl{margin-bottom:8px}
 /* library + my folders */
 .flist{max-height:640px;overflow:auto}
 .fsec{padding:8px 10px 3px;font-size:10px;letter-spacing:.5px;color:var(--faint);text-transform:uppercase;font-weight:600}
@@ -134,8 +163,7 @@ dialog pre{background:var(--pre);border:1px solid var(--line);padding:8px;font-s
 .savepop .bt{text-align:left;height:28px}
 .rowbtns{display:flex;gap:8px;justify-content:flex-end;align-items:center}
 .star:hover{color:#F7D448}
-.pos{color:var(--good)}.neg{color:var(--bad)}
-.st td.pos,.st td .pos{font-weight:600}
+.pm-pos{color:var(--good);font-weight:600}.pm-neg{color:var(--bad);font-weight:600}
 /* player profiles */
 #ppList .bt{height:46px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .phead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:4px}
@@ -178,7 +206,7 @@ body[data-tab=review] .chartgrid{grid-template-columns:minmax(0,1fr) minmax(0,1f
 <div class="bar">
  <span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span>
  <span style="margin-left:8px;font-weight:500">Practice CW</span>
- <span class="seg-ctl" style="margin-left:6px"><button class="bt sm" id="tabPractices">Practices</button><button class="bt sm on" id="tabCode">Code</button><button class="bt sm" id="tabReview">Review</button><button class="bt sm" id="tabLibrary">Library</button><button class="bt sm" id="tabFolders">My folders</button><button class="bt sm" id="tabPlayers">Players</button></span>
+ <span class="seg-ctl" style="margin-left:6px"><button class="bt sm" id="tabPractices">Practices</button><button class="bt sm" id="tabGames">Games</button><button class="bt sm on" id="tabCode">Code</button><button class="bt sm" id="tabReview">Review</button><button class="bt sm" id="tabLibrary">Library</button><button class="bt sm" id="tabFolders">My folders</button><button class="bt sm" id="tabPlayers">Players</button></span>
  <input id="sessName" class="txt code-only" placeholder="Practice name" style="margin-left:6px;width:200px">
  <input id="sessDate" type="date" class="txt code-only" style="width:140px">
  <span id="reviewing" class="muted" style="margin-left:6px"></span>
@@ -217,6 +245,25 @@ body[data-tab=review] .chartgrid{grid-template-columns:minmax(0,1fr) minmax(0,1f
  </div>
 </div>
 
+<!-- GAMES TAB -->
+<div id="gamesView">
+ <div class="blk">
+  <div class="hd">GAMES</div>
+  <div class="gimport" id="gDrop">
+   <div><b>Import a game</b> <span class="faint">— Sports Reference box score exports (<i>Share &amp; Export → Get as Excel Workbook</i>), or .xlsx / .csv with the same columns. Drop the <b>Basic</b> and <b>Advanced</b> files together, or one at a time.</span></div>
+   <label class="bt grn sm" style="display:inline-flex;align-items:center">Choose files<input type="file" id="gFile" accept=".xls,.xlsx,.csv,.htm,.html" multiple hidden></label>
+  </div>
+  <div id="gPreview" class="hidden"></div>
+  <div class="ptools">
+   <button class="bt gry sm" id="gAll">Select all</button><button class="bt gry sm" id="gNone">Clear</button>
+   <span id="gSelInfo" class="muted"></span><span style="flex:1"></span>
+   <span id="gRecord" class="muted"></span>
+  </div>
+  <div class="pwrap"><table class="ptable" id="gTable"></table></div>
+ </div>
+ <div class="blk" style="padding:8px" id="gDetail"></div>
+</div>
+
 <!-- PLAYERS TAB -->
 <div id="playersView">
  <div class="blk">
@@ -244,6 +291,7 @@ body[data-tab=review] .chartgrid{grid-template-columns:minmax(0,1fr) minmax(0,1f
     <div><div class="sec">By shot grade</div><div id="profGrades"></div></div>
     <div><div class="sec">Free throws</div><div id="profFT"></div></div>
    </div>
+   <div id="profGames"></div>
    <div class="sec">Practice log <span class="faint">· click a number to watch it from that practice</span></div><div id="profLog" style="overflow-x:auto"></div>
   </div>
  </div>
@@ -287,6 +335,7 @@ body[data-tab=review] .chartgrid{grid-template-columns:minmax(0,1fr) minmax(0,1f
    <label class="f">Team<select id="fTeam"><option value="">All</option><option>GOLD</option><option>BLUE</option></select></label>
    <label class="f">Player<select id="fPlayer"></select></label>
    <label class="f">Contains<select id="fTag"></select></label>
+   <label class="f" id="fSetWrap">Set<select id="fSet"></select></label>
    <label class="f" id="fOnWrap">On floor<select id="fOn"></select></label>
    <label class="f" id="fOutWrap">Outcome<select id="fOut"><option value="">Any</option><option value="score">Scored</option><option value="empty">Empty</option><option value="to">Turnover</option></select></label>
    <label class="f">Poss lead-in (s)<input type="number" id="padPoss" min="0" max="10" step="0.5" value="1"></label>
@@ -354,6 +403,14 @@ body[data-tab=review] .chartgrid{grid-template-columns:minmax(0,1fr) minmax(0,1f
   </div>
  </div>
 
+ <div class="blk" id="setsBlk">
+  <div class="hd">SETS<button class="x" id="pbEdit" style="position:absolute;right:8px;top:5px;font-size:11px">✎ edit sets</button></div>
+  <div class="setrow"><span class="setlbl">OFF<small>⇧ + #</small></span><div class="setbtns" id="offSetBtns"></div></div>
+  <div class="setrow"><span class="setlbl">DEF<small>⌥ + #</small></span><div class="setbtns" id="defSetBtns"></div></div>
+  <div id="setNow" class="muted" style="padding:4px 8px;font-size:11px;border-top:1px solid var(--line)"></div>
+  <div id="pbEditor" class="hidden" style="padding:8px;border-top:1px solid var(--line)"></div>
+ </div>
+
  <div class="blk"><div class="hd">OFFENSIVE STATS</div><div class="g" id="off" style="grid-template-columns:repeat(4,minmax(0,1fr))"></div></div>
  <div class="blk"><div class="hd">DEFENSIVE STATS</div><div class="g" id="def" style="grid-template-columns:repeat(4,minmax(0,1fr))"></div></div>
 
@@ -369,6 +426,8 @@ body[data-tab=review] .chartgrid{grid-template-columns:minmax(0,1fr) minmax(0,1f
  <div id="statBody">
  <div class="sec">Team summary</div><div id="team" style="overflow-x:auto"></div>
  <div class="sec">Player box</div><div id="box" style="overflow-x:auto"></div>
+ <div class="sec">Sets <span class="faint">· tagged while coding (⇧ / ⌥ + number) · click a number to watch</span></div>
+ <div id="setTables"></div>
  <div class="sec">Shot chart <span class="faint">(click a dot to watch that shot · click a player's name above to chart them)</span></div>
  <div id="sheetChart"></div>
  <details id="comboWrap" style="margin-top:8px"><summary class="sec" style="cursor:pointer">Lineup combinations <span class="faint">(optional) — how groups did together on the floor</span></summary>
@@ -475,6 +534,24 @@ create table if not exists public.players (
   updated_at timestamptz not null default now()
 );
 
+-- Imported game box scores (basic + advanced, one row per game)
+create table if not exists public.games (
+  id text primary key,
+  game_date date,
+  opponent text,
+  data jsonb not null,
+  updated_at timestamptz not null default now()
+);
+
+-- The team's offensive / defensive sets (one row for the whole staff)
+create table if not exists public.playbook (
+  id text primary key,
+  data jsonb not null,
+  updated_at timestamptz not null default now()
+);
+alter table public.possessions add column if not exists off_set text;
+alter table public.possessions add column if not exists def_set text;
+
 -- Coaches' saved-clip folders (clips point at a practice + possession/stat, so no video is stored)
 create table if not exists public.folders (
   id text primary key,
@@ -507,17 +584,23 @@ alter table public.possessions enable row level security;
 alter table public.events enable row level security;
 alter table public.players enable row level security;
 alter table public.folders enable row level security;
+alter table public.playbook enable row level security;
+alter table public.games enable row level security;
 drop policy if exists "team read/write" on public.sessions;
 drop policy if exists "team read/write" on public.possessions;
 drop policy if exists "team read/write" on public.events;
 drop policy if exists "team read/write" on public.players;
 drop policy if exists "team read/write" on public.folders;
+drop policy if exists "team read/write" on public.playbook;
+drop policy if exists "team read/write" on public.games;
 create policy "team read/write" on public.sessions for all to anon, authenticated using (true) with check (true);
 create policy "team read/write" on public.possessions for all to anon, authenticated using (true) with check (true);
 create policy "team read/write" on public.events for all to anon, authenticated using (true) with check (true);
 create policy "team read/write" on public.players for all to anon, authenticated using (true) with check (true);
 create policy "team read/write" on public.folders for all to anon, authenticated using (true) with check (true);
-grant select, insert, update, delete on public.sessions, public.possessions, public.events, public.players, public.folders to anon, authenticated;
+create policy "team read/write" on public.playbook for all to anon, authenticated using (true) with check (true);
+create policy "team read/write" on public.games for all to anon, authenticated using (true) with check (true);
+grant select, insert, update, delete on public.sessions, public.possessions, public.events, public.players, public.folders, public.playbook, public.games to anon, authenticated;
 
 -- Make the API pick up the new tables right away
 notify pgrst, 'reload schema';</pre>
@@ -696,7 +779,9 @@ const floorCache=new Map();
 function floorData(s){const key=`${s.updated}|${s.events.length}|${isLoaded(s)?Math.round(dur()):0}`,c=floorCache.get(s.id);if(c&&c.key===key)return c.v;
  const at=lineupFn(s),inP=new Set();
  const poss=possessions(s).map(P=>{const E=possEvents(s,P),pt={GOLD:0,BLUE:0};E.forEach(e=>{inP.add(e);if(e.team in pt)pt[e.team]+=pts(e)});
-  return{P,pt,L:at(Math.min(P.start+LINEUP_LAG,P.end!=null?(P.start+P.end)/2:Infinity))}});
+  // A possession's set = the last offense / defense tag inside it.
+  const sets={off:'',def:''};s.events.filter(e=>e.k==='set'&&inPoss(P,e.t)).sort((a,b)=>a.t-b.t||a.id-b.id).forEach(e=>{sets[e.side]=e.set});
+  return{P,pt,E,sets,L:at(Math.min(P.start+LINEUP_LAG,P.end!=null?(P.start+P.end)/2:Infinity))}});
  const v={poss,byId:new Map(poss.map(x=>[x.P.id,x])),loose:codedEvents(s).filter(e=>!inP.has(e)&&pts(e)).map(e=>({e,L:at(e.t)}))};
  floorCache.set(s.id,{key,v});return v}
 const OTHER={GOLD:'BLUE',BLUE:'GOLD'};
@@ -724,10 +809,11 @@ function eventTags(e){
  if(e.k==='ft')return['FT',e.make?'FT make':'FT miss',...(e.make?['Scoring']:[])];
  if(e.k==='shot')return['Shot',e.make?'Make':'Miss',e.zone==='3'?'3PT':e.zone,...(e.zone==='3'?[e.label]:[]),...(e.grade?[e.grade]:[]),...(e.make?['Scoring']:[])];
  return[]}
-const evLabel=e=>e.k==='stat'?e.stat:e.k==='ft'?`${e.make?'+':'-'} FT`:e.k==='shot'?`${e.make?'+':'-'} ${e.label}`:e.k==='poss'?`${e.team} POSSESSION`:e.k==='end'?'END / DEAD BALL':e.k==='sub'?`SUB ${pname(e.p)} in for ${pname(e.out)}`:'';
+const evLabel=e=>e.k==='set'?`${e.side==='off'?'OFF':'DEF'} SET: ${setName(e.set,e.name)}`:e.k==='stat'?e.stat:e.k==='ft'?`${e.make?'+':'-'} FT`:e.k==='shot'?`${e.make?'+':'-'} ${e.label}`:e.k==='poss'?`${e.team} POSSESSION`:e.k==='end'?'END / DEAD BALL':e.k==='sub'?`SUB ${pname(e.p)} in for ${pname(e.out)}`:'';
 // Which practices the stat sheet and clip list are showing right now.
 const byDate=(a,b)=>(a.date||'').localeCompare(b.date||'')||a.created.localeCompare(b.created);
 function viewSessions(){
+ if(tab==='games')return[];
  if(tab==='players')return playerScope();
  if(tab==='library')return libScope();
  if(tab==='folders')return folderSessions();
@@ -794,21 +880,21 @@ function jumpTo(s,t){stopQueue();if(openSessionVideo(s,Math.max(0,t),true))st(`J
 
 // ---------- Clips + playlist (across every practice in view) ----------
 const num=(id,d)=>{const x=parseFloat($(id).value);return isFinite(x)&&x>=0?x:d};
-function filters(){return{mode:$('fMode').value,team:$('fTeam').value,pl:$('fPlayer').value,tag:$('fTag').value,out:$('fOut').value,on:$('fOn').value}}
+function filters(){return{mode:$('fMode').value,team:$('fTeam').value,pl:$('fPlayer').value,tag:$('fTag').value,out:$('fOut').value,on:$('fOn').value,set:$('fSet').value}}
 // An event matches when it is by the filtered player AND carries the filtered tag (same event, not just same possession).
 const evMatch=(e,F)=>(!F.pl||e.p===F.pl)&&(!F.tag||eventTags(e).includes(F.tag));
-function clipList(){
- const F=filters(),lead=num('padPoss',1),pre=num('padPre',4),post=num('padPost',2);
- return viewSessions().flatMap(s=>{
-  if(F.mode==='poss')return possessions(s).map(P=>{const E=possEvents(s,P);
-    return{key:s.id+':p'+P.id,s,P,E,pt:possPts(P,E),team:P.team,start:Math.max(0,P.start-lead),end:P.end??Math.max(P.start+30,(E.at(-1)?.t??0)+5),t:P.start}})
-   .filter(c=>(!F.team||c.team===F.team)&&(!F.on||onFloor(s,c.P,F.on))&&(!(F.pl||F.tag)||c.E.some(e=>evMatch(e,F)))
+function clipList(F0){
+ const F=F0||filters(),lead=num('padPoss',1),pre=num('padPre',4),post=num('padPost',2);
+ return viewSessions().flatMap(s=>{const fd=floorData(s);
+  if(F.mode==='poss')return fd.poss.map(({P,E,sets})=>
+    ({key:s.id+':p'+P.id,s,P,E,sets,pt:possPts(P,E),team:P.team,start:Math.max(0,P.start-lead),end:P.end??Math.max(P.start+30,(E.at(-1)?.t??0)+5),t:P.start}))
+   .filter(c=>(!F.team||c.team===F.team)&&(!F.set||setMatch(c.sets,F.set))&&(!F.on||onFloor(s,c.P,F.on))&&(!(F.pl||F.tag)||c.E.some(e=>evMatch(e,F)))
     &&(!F.out||(F.out==='score'?c.pt>0:F.out==='empty'?c.pt===0:c.E.some(e=>e.stat==='TO'))));
-  return codedEvents(s).sort((a,b)=>a.t-b.t).filter(e=>(!F.team||e.team===F.team)&&evMatch(e,F))
+  return codedEvents(s).sort((a,b)=>a.t-b.t).filter(e=>(!F.team||e.team===F.team)&&evMatch(e,F)&&(!F.set||(x=>!!x&&setMatch(x.sets,F.set))(fd.poss.find(y=>inPoss(y.P,e.t)))))
    .map(e=>({key:s.id+':e'+e.id,s,e,team:e.team,start:Math.max(0,e.t-pre),end:e.t+post,t:e.t}))})}
 function chip(s,e,F){const cls=(e.k==='shot'||e.k==='ft')?(e.make?'mk':'ms'):'',hl=F&&(F.pl||F.tag)&&evMatch(e,F)?' match':'';
  return `<span class="chip ${cls}${hl}" data-sid="${esc(s.id)}" data-seek="${e.t}" title="${esc(pname(e.p))} · jump to ${fmt(e.t)}">${esc(evLabel(e))} ${esc(pshort(e.p))}</span>`}
-function filterSummary(F){const parts=[];if(F.on)parts.push(F.on.split(',').map(pname).join(' + ')+' on floor');if(F.pl)parts.push(pname(F.pl));if(F.team)parts.push(F.team);if(F.tag)parts.push(TAG_NAME[F.tag]||F.tag);
+function filterSummary(F){const parts=[];if(F.set)parts.push(setLabel(F.set));if(F.on)parts.push(F.on.split(',').map(pname).join(' + ')+' on floor');if(F.pl)parts.push(pname(F.pl));if(F.team)parts.push(F.team);if(F.tag)parts.push(TAG_NAME[F.tag]||F.tag);
  if(F.out)parts.push({score:'scored',empty:'empty',to:'turnover'}[F.out]);return parts.join(' · ')}
 function renderClips(){
  const F=filters(),L=clipList(),playing=queue&&queue[qi]&&queue[qi].key,poss=F.mode==='poss',multi=viewSessions().length>1,canDel=tab==='code';
@@ -822,7 +908,7 @@ function renderClips(){
  $('clips').innerHTML=L.length?L.map((c,i)=>{
   const head=multi&&c.s.id!==lastSid?`<div class="pgroup">${esc(practiceLabel(c.s))}${c.s.source?'':' — no video linked'}</div>`:'';lastSid=c.s.id;
   const tm=`<span><span class="tm" style="${TEAMCSS[c.team]||''}"></span> ${c.team?c.team[0]:''}</span>`;
-  const body=poss?`<span><b>${c.pt} pts</b> ${c.E.map(e=>chip(c.s,e,F)).join('')||'<span class="faint">no events</span>'}</span>`:`<span>${chip(c.s,c.e,F)}${c.e.grade?`<span class="chip">${esc(c.e.grade)}</span>`:''}</span>`;
+  const body=poss?`<span><b>${c.pt} pts</b> ${setChips(c.sets)}${c.E.map(e=>chip(c.s,e,F)).join('')||'<span class="faint">no events</span>'}</span>`:`<span>${chip(c.s,c.e,F)}${c.e.grade?`<span class="chip">${esc(c.e.grade)}</span>`:''}</span>`;
   const id=poss?`#${c.P.n}`:`${i+1}`,delBtn=`<span class="rowbtns"><button class="x star" data-save="${i}" title="Save to a folder">☆</button>${canDel?`<button class="x" data-del="${poss?c.P.id:c.e.id}" title="${poss?'Delete possession marker':'Delete event'}">×</button>`:''}</span>`;
   return `${head}<div class="clip${c.key===playing?' playing':''}" data-i="${i}"><span class="mono">${id}</span>${tm}<span class="mono">${fmt(c.start)}–${fmt(c.end)}</span><span class="mono dur faint">${(c.end-c.start).toFixed(1)}s</span>${body}${delBtn}</div>`}).join('')
  :`<div class="faint" style="padding:12px">${viewSessions().some(s=>s.events.length)?'No clips match these filters.':tab==='code'?'Press P (or GOLD / BLUE POSSESSION) while the video plays — each press starts a new clip and ends the previous one.':'No coded possessions in these practices yet.'}</div>`;
@@ -844,12 +930,13 @@ function stepClip(d){const L=clipList();if(!L.length)return;
  const hit=d>0?here.find(x=>x.c.start>t+0.05):here.filter(x=>x.c.start<t-1.5).at(-1);
  if(!hit){st(d>0?'No later clip':'No earlier clip');return}playQueue(L,hit.i,true)}
 $('prevClip').onclick=()=>stepClip(-1);$('nextClip').onclick=()=>stepClip(1);
-['fMode','fTeam','fPlayer','fTag','fOut','fOn','padPoss','padPre','padPost'].forEach(i=>$(i).addEventListener('change',()=>{stopQueue();renderClips();if($(i).tagName==='SELECT')$(i).blur()}));
-function setFilters(F){if(F.on&&![...$('fOn').options].some(o=>o.value===F.on))$('fOn').insertAdjacentHTML('beforeend',`<option value="${esc(F.on)}">${esc(F.on.split(',').map(pshort).join(' + '))}</option>`);$('fOn').value=F.on||'';$('fMode').value=F.mode||'poss';$('fTeam').value=F.team||'';$('fPlayer').value=F.pl||'';$('fTag').value=F.tag||'';$('fOut').value=F.out||''}
+['fMode','fTeam','fPlayer','fTag','fOut','fOn','fSet','padPoss','padPre','padPost'].forEach(i=>$(i).addEventListener('change',()=>{stopQueue();renderClips();if($(i).tagName==='SELECT')$(i).blur()}));
+function setFilters(F){$('fSet').value=F.set||'';if(F.on&&![...$('fOn').options].some(o=>o.value===F.on))$('fOn').insertAdjacentHTML('beforeend',`<option value="${esc(F.on)}">${esc(F.on.split(',').map(pshort).join(' + '))}</option>`);$('fOn').value=F.on||'';$('fMode').value=F.mode||'poss';$('fTeam').value=F.team||'';$('fPlayer').value=F.pl||'';$('fTag').value=F.tag||'';$('fOut').value=F.out||''}
 $('bannerClear').onclick=()=>{stopQueue();setFilters({mode:$('fMode').value});renderClips()};
 function fillFilters(){
  const keep=(id,html)=>{const s=$(id),o=s.value;s.innerHTML=html;if([...s.options].some(x=>x.value===o))s.value=o;
   else if(id==='fOn'&&o.includes(','))s.insertAdjacentHTML('beforeend',`<option value="${esc(o)}" selected>${esc(o.split(',').map(pshort).join(' + '))}</option>`)};
+ keep('fSet','<option value="">Any</option>'+setOptions());
  keep('fOn','<option value="">Anyone</option>'+orderIds([...activeIds(),...viewSessions().flatMap(s=>[...s.lineup.GOLD,...s.lineup.BLUE])]).map(p=>`<option value="${esc(p)}">${esc(pname(p))}</option>`).join(''));
  keep('fPlayer','<option value="">All</option>'+orderIds([...activeIds(),...viewSessions().flatMap(s=>codedEvents(s).map(e=>e.p))]).map(p=>`<option value="${esc(p)}">${esc(pname(p))}</option>`).join(''));
  const opt=a=>a.map(x=>`<option value="${esc(x[0])}">${esc(x[1])}</option>`).join('');
@@ -860,10 +947,10 @@ function fillFilters(){
   .map(([g,a])=>`<optgroup label="${g}">${opt(a.map(x=>[x,TAG_NAME[x]||x]))}</optgroup>`).join(''))}
 
 // ---------- Stat sheet: every number is a link to its possessions ----------
-const cellKey=F=>[F.pl||'',F.team||'',F.tag||'',F.out||'',F.on||''].join('|');
+const cellKey=F=>[F.pl||'',F.team||'',F.tag||'',F.out||'',F.on||'',F.set||'',F.mode||''].join('|');
 function cell(n,F,txt){const shown=txt??n;if(!n)return `<td>${n===0&&txt==null?'':shown}</td>`;
  return `<td class="cl" data-f="${esc(JSON.stringify(F))}" data-key="${esc(cellKey(F))}" title="Watch these possessions">${shown}</td>`}
-function markActiveCell(){const k=cellKey(filters());document.querySelectorAll('td.cl[data-key]').forEach(td=>td.classList.toggle('on',tab!=='practices'&&td.dataset.key===k))}
+function markActiveCell(){const F=filters();if(F.mode==='poss')delete F.mode;const k=cellKey(F);document.querySelectorAll('td.cl[data-key]').forEach(td=>td.classList.toggle('on',tab!=='practices'&&td.dataset.key===k))}
 $('statsBlk').addEventListener('click',e=>{
  const lg=e.target.closest('#log [data-del]');if(lg){del(+lg.dataset.del);return}
  const row=e.target.closest('#log [data-t]');if(row){const s=viewSessions()[0];jumpTo(s,+row.dataset.t-num('padPre',4));return}
@@ -876,15 +963,16 @@ $('statsBlk').addEventListener('click',e=>{
 
 // ---------- Tabs ----------
 function setTab(t){tab=t;document.body.dataset.tab=t;
- ['Practices','Code','Review','Library','Folders','Players'].forEach(n=>$('tab'+n).classList.toggle('on',t===n.toLowerCase()));
+ ['Practices','Games','Code','Review','Library','Folders','Players'].forEach(n=>$('tab'+n).classList.toggle('on',t===n.toLowerCase()));
  if(t!=='code'&&shotOpen())closeShot();
  if(t==='practices'){$('practicesView').appendChild($('statsBlk'));stopQueue();src.pause();renderPractices()}
  else if(t==='players'){stopQueue();src.pause()}
+ else if(t==='games'){stopQueue();src.pause();renderGames()}
  else if(t==='library'||t==='folders'){stopQueue();closeSave()}
  else if(t==='review'){$('rightCol').appendChild($('statsBlk'));if(!reviewSet)reviewSet=[S];const VS=viewSessions();if(!VS.some(isLoaded)&&VS[0])openSessionVideo(VS[0],null,false)}
  else{$('main').after($('statsBlk'));reviewSet=null;stopQueue();if(!isLoaded(S))openSessionVideo(S,null,false);drawAll()}
  LS.set('tab',t);render()}
-$('tabPractices').onclick=()=>setTab('practices');$('tabPlayers').onclick=()=>setTab('players');$('tabLibrary').onclick=()=>setTab('library');$('tabFolders').onclick=()=>setTab('folders');$('tabCode').onclick=()=>setTab('code');$('tabReview').onclick=()=>{if(tab!=='review'&&tab!=='practices')reviewSet=null;else if(tab==='practices'&&selected.size)reviewSet=viewSessions();setTab('review')};
+$('tabPractices').onclick=()=>setTab('practices');$('tabGames').onclick=()=>setTab('games');$('tabPlayers').onclick=()=>setTab('players');$('tabLibrary').onclick=()=>setTab('library');$('tabFolders').onclick=()=>setTab('folders');$('tabCode').onclick=()=>setTab('code');$('tabReview').onclick=()=>{if(tab!=='review'&&tab!=='practices')reviewSet=null;else if(tab==='practices'&&selected.size)reviewSet=viewSessions();setTab('review')};
 function openForCoding(s){if(S.id!==s.id){save();S=s;player=null}LS.set('current',S.id);setTab('code');st(`Coding ${practiceLabel(S)}`)}
 
 // ---------- Practices tab ----------
@@ -950,6 +1038,7 @@ function tick(){const t=now(),D=dur(),p=src.paused(),c=queue&&queue[qi];
  $('keyLive').classList.toggle('on',document.hasFocus()&&document.activeElement?.tagName!=='IFRAME')}
 const tlSession=()=>tab==='code'?S:viewSessions().find(isLoaded);
 function updNow(){const t=now(),D=dur();
+ if(tab==='code'){const P=possAt(S,t),x=P?floorData(S).byId.get(P.id):null,k=P?P.id+'|'+x.sets.off+'|'+x.sets.def:null;if(k!==setsShownFor)drawSets()}
  $('clock').textContent=`${fmt(t)} / ${fmt(D)}`;
  $('ph').style.left=D?`${t/D*100}%`:'0';
  const P=tab==='code'?possAt(S,t):null;
@@ -970,6 +1059,7 @@ const KEYS=[
  ['Defense',STATS.filter(s=>s[3]==='def').map(s=>[s[2].toUpperCase(),s[1],s[2]])],
  ['Shots & FTs',[['S','Practice shot (chart)','s'],['+','Made free throw','+'],['X','Missed free throw','x']]],
  ['In shot chart',[['0–9','Shooter','sc'],['+ / −','Make / miss','sc'],['Enter','Log shot','sc'],['Esc','Close','sc']]],
+ ['Sets',[['⇧ 1–9','Offensive set 1–9','setoff'],['⌥ 1–9','Defensive set 1–9','setdef']]],
  ['Video & clips',[['Space','Play / pause','space'],['← →','Back / fwd 3s','arrow'],['⇧ ← →','Back / fwd 10s','arrow'],['[ ]','Prev / next clip','clip'],['⌘/Ctrl Z','Undo last','undo']]]];
 $('keys').innerHTML=KEYS.map(([g,rows])=>`<h4>${g}</h4>`+rows.map(([k,l,id])=>`<div class="kr" data-k="${esc(id)}"><kbd>${esc(k)}</kbd>${esc(l)}</div>`).join('')).join('');
 function setKeysHidden(h){$('keys').classList.toggle('hidden',h);$('keysTog').textContent=h?'show':'hide';LS.set('keysHidden',h)}
@@ -981,12 +1071,14 @@ const ACTIONS={...VIDEO_ACTIONS,p:flipPoss,g:()=>startPoss('GOLD'),h:()=>startPo
 STATS.forEach(([code,,k])=>ACTIONS[k]=()=>stat(code));
 const FLASH_ID={' ':'space','=':'+','-':'x','[':'clip',']':'clip'};
 document.addEventListener('keydown',e=>{
- if(document.querySelector('dialog[open]')||tab==='practices'||tab==='players')return;
+ if(document.querySelector('dialog[open]')||tab==='practices'||tab==='players'||tab==='games')return;
  const tg=e.target,tag=tg.tagName,k=e.key;
  if(k==='Escape'&&!$('savePop').classList.contains('hidden')){e.preventDefault();closeSave();return}
  if(tag==='TEXTAREA'||tg.isContentEditable||(tag==='INPUT'&&!['checkbox','radio','button','file'].includes(tg.type)))return;
  const coding=tab==='code';
  if((e.metaKey||e.ctrlKey)&&!e.altKey&&k.toLowerCase()==='z'){if(!coding)return;e.preventDefault();undo();flash('undo');return}
+ // ⇧ + 1–9 tags the possession's offensive set, ⌥/Alt + 1–9 its defensive set.
+ if(coding&&!shotOpen()&&!e.metaKey&&!e.ctrlKey&&(e.shiftKey||e.altKey)&&/^Digit[1-9]$/.test(e.code)){e.preventDefault();if(!e.repeat)tagSet(e.altKey?'def':'off',+e.code.slice(5)-1);return}
  if(e.metaKey||e.ctrlKey||e.altKey)return;
  if(k==='ArrowLeft'||k==='ArrowRight'){e.preventDefault();skip((k==='ArrowLeft'?-1:1)*(e.shiftKey?10:3));flash('arrow');return}
  if(e.repeat){if(k.length===1)e.preventDefault();return}
@@ -1053,7 +1145,7 @@ async function cloudFetch(path,opt={},cfg=cloud){
  const txt=await r.text();if(!r.ok)throw new Error(`${r.status} ${txt.slice(0,180)}`);return txt?JSON.parse(txt):null}
 function queueCloud(s){if(!cloud)return;clearTimeout(cloudTimers[s.id]);cloudState('saving…');cloudTimers[s.id]=setTimeout(()=>pushCloud(s),1500)}
 function cloudRows(s){const PS=possessions(s),sid=s.id,pre=num('padPre',4);
- const possRows=PS.map(P=>({session_id:sid,n:P.n,team:P.team,team_n:P.tn,start_s:+P.start.toFixed(2),end_s:P.end==null?null:+P.end.toFixed(2),points:possPts(P,possEvents(s,P)),video_url:ytLink(s,P.start)}));
+ const fdB=floorData(s).byId,possRows=PS.map(P=>{const x=fdB.get(P.id);return{session_id:sid,n:P.n,team:P.team,team_n:P.tn,start_s:+P.start.toFixed(2),end_s:P.end==null?null:+P.end.toFixed(2),points:possPts(P,possEvents(s,P)),off_set:x&&x.sets.off?setName(x.sets.off):null,def_set:x&&x.sets.def?setName(x.sets.def):null,video_url:ytLink(s,P.start)}});
  const evRows=codedEvents(s).map(e=>{const P=PS.find(P=>inPoss(P,e.t));
   return{session_id:sid,id:e.id,possession_n:P?P.n:null,t:+e.t.toFixed(2),kind:e.k,stat:e.k==='stat'?e.stat:e.k==='shot'?e.label:'FT',player:e.p,team:e.team,
    make:e.k==='stat'?null:!!e.make,zone:e.zone||null,grade:e.grade||null,x:e.x??null,y:e.y??null,video_url:ytLink(s,e.t-pre)}});
@@ -1088,7 +1180,7 @@ $('cConnect').onclick=async()=>{const cfg={url:$('cUrl').value.trim(),key:$('cKe
  if(!/^https?:\/\//.test(cfg.url)||!cfg.key){$('cMsg').textContent='Enter the project URL and key';return}
  $('cMsg').textContent='Connecting…';
  try{await cloudFetch('sessions?select=id&limit=1',{},cfg);cloud=cfg;tablesWarned=false;LS.set('cloud',cfg);cloudState('on','ok');
-  await refreshCloud();loadRoster();loadFolders();
+  await refreshCloud();loadRoster();loadFolders();loadPlaybook();loadGames();
   const up=[...lib.values()].filter(x=>!x.cloud).map(x=>x.s);for(const s of up)await pushCloud(s);
   $('cMsg').textContent=`Connected${up.length?` · uploaded ${up.length} practice${up.length===1?'':'s'} from this browser`:''} — practices are in the Practices tab`;
   if(tab==='practices')renderPractices();if(tab==='players')renderPlayers()}
@@ -1113,7 +1205,8 @@ function render(){
  const ON=onFloorStats(VS),ps=orderIds([...ev.map(e=>e.p),...[...ON.entries()].filter(([,r])=>r.op+r.dp).map(([id])=>id)]);
  $('box').innerHTML=ps.length?`<table class="st"><tr><th style="text-align:left">Player</th>${multi?'<th title="Practices they played in">Prac</th>':''}<th title="Points for minus points against while on the floor — click to watch those possessions">+/−</th><th title="Possessions on the floor (offense + defense)">On</th><th title="Net points per possession on the floor: offensive PPP minus defensive PPP">Net</th><th>Pts</th><th>FG</th><th>3P</th><th>FT</th><th>REB</th>${STATS.map(s=>`<th title="${esc(s[1])}">${esc(s[0])}</th>`).join('')}</tr>${ps.map(p=>{const E=ev.filter(e=>e.p===p),S2=E.filter(e=>e.k==='shot'),S3=S2.filter(e=>e.zone==='3'),F=E.filter(e=>e.k==='ft'),c=s=>E.filter(e=>e.stat===s).length,PT=E.reduce((a,e)=>a+pts(e),0);
   const np=VS.filter(s=>playedIn(s,p)).length;
-  return `<tr><td class="cl pname${sheetChart.player()===p?' on':''}" style="text-align:left" data-chart="${esc(p)}" title="Show ${esc(pname(p))}'s shot chart">${esc(pname(p))}</td>${multi?`<td>${np}</td>`:''}${(r=>cell(r.op+r.dp,{on:p},`<span class="${r.pm>0?'pos':r.pm<0?'neg':''}">${signed(r.pm)}</span>`)+cell(r.op+r.dp,{on:p},`${r.op+r.dp}`)+`<td title="Off ${ppp(r.of,r.op)} PPP (${r.op}) · Def ${ppp(r.da,r.dp)} PPP (${r.dp})">${netStr(r)}</td>`)(ON.get(p)||blankOn())}${cell(PT,{pl:p,tag:'Scoring'})}${cell(S2.length,{pl:p,tag:'Shot'},f(S2))}${cell(S3.length,{pl:p,tag:'3PT'},f(S3))}${cell(F.length,{pl:p,tag:'FT'},f(F))}${cell(c('OREB')+c('DREB'),{pl:p,tag:'REB'})}${STATS.map(s=>cell(c(s[0]),{pl:p,tag:s[0]})).join('')}</tr>`}).join('')}</table>`:'<span class="faint">No player events yet</span>';
+  return `<tr><td class="cl pname${sheetChart.player()===p?' on':''}" style="text-align:left" data-chart="${esc(p)}" title="Show ${esc(pname(p))}'s shot chart">${esc(pname(p))}</td>${multi?`<td>${np}</td>`:''}${(r=>cell(r.op+r.dp,{on:p},`<span class="${r.pm>0?'pm-pos':r.pm<0?'pm-neg':''}">${signed(r.pm)}</span>`)+cell(r.op+r.dp,{on:p},`${r.op+r.dp}`)+`<td title="Off ${ppp(r.of,r.op)} PPP (${r.op}) · Def ${ppp(r.da,r.dp)} PPP (${r.dp})">${netStr(r)}</td>`)(ON.get(p)||blankOn())}${cell(PT,{pl:p,tag:'Scoring'})}${cell(S2.length,{pl:p,tag:'Shot'},f(S2))}${cell(S3.length,{pl:p,tag:'3PT'},f(S3))}${cell(F.length,{pl:p,tag:'FT'},f(F))}${cell(c('OREB')+c('DREB'),{pl:p,tag:'REB'})}${STATS.map(s=>cell(c(s[0]),{pl:p,tag:s[0]})).join('')}</tr>`}).join('')}</table>`:'<span class="faint">No player events yet</span>';
+ renderSetTables(VS);
  renderCombos(VS);
  $('logWrap').classList.toggle('hidden',VS.length!==1);
  if(VS.length===1){const s=VS[0],L=[...s.events].sort((a,b)=>b.t-a.t||b.id-a.id),canDel=tab==='code';
@@ -1127,7 +1220,7 @@ function renderCombos(VS){if(!$('comboWrap').open)return;
  const k=+$('comboK').value,min=Math.max(1,+$('comboMin').value||1),tm=$('comboTeam').value;
  const rows=comboStats(VS,k).filter(r=>r.op+r.dp>=min&&(!tm||r.T===tm));
  $('combos').innerHTML=rows.length?`<table class="st"><tr><th style="text-align:left">Team</th><th style="text-align:left">Players</th><th>Poss</th><th title="Offensive possessions / points per possession">Off</th><th title="Defensive possessions / points allowed per possession">Def</th><th>Net</th><th>Pts</th><th>+/−</th></tr>${rows.map(r=>{const n=r.op+r.dp;
-  return `<tr><td style="text-align:left;${TEAMCSS[r.T]}">${r.T}</td><td style="text-align:left;white-space:normal">${r.g.map(id=>esc(pname(id))).join(' · ')}</td>${cell(n,{on:r.g.join(',')})}<td>${r.op} · ${ppp(r.of,r.op)}</td><td>${r.dp} · ${ppp(r.da,r.dp)}</td><td>${netStr(r)}</td><td>${r.of}–${r.da}</td>${cell(n,{on:r.g.join(',')},`<span class="${r.pm>0?'pos':r.pm<0?'neg':''}">${signed(r.pm)}</span>`)}</tr>`}).join('')}</table>`
+  return `<tr><td style="text-align:left;${TEAMCSS[r.T]}">${r.T}</td><td style="text-align:left;white-space:normal">${r.g.map(id=>esc(pname(id))).join(' · ')}</td>${cell(n,{on:r.g.join(',')})}<td>${r.op} · ${ppp(r.of,r.op)}</td><td>${r.dp} · ${ppp(r.da,r.dp)}</td><td>${netStr(r)}</td><td>${r.of}–${r.da}</td>${cell(n,{on:r.g.join(',')},`<span class="${r.pm>0?'pm-pos':r.pm<0?'pm-neg':''}">${signed(r.pm)}</span>`)}</tr>`}).join('')}</table>`
   :`<span class="faint">No ${k}-player groups${min>1?` with ${min}+ possessions`:''} yet — lineups come from the Lineups section while coding.</span>`}
 $('comboWrap').addEventListener('toggle',()=>{LS.set('combosOpen',$('comboWrap').open);renderCombos(viewSessions())});
 ['comboK','comboMin','comboTeam'].forEach(i=>$(i).addEventListener('change',()=>{$(i).blur();renderCombos(viewSessions())}));
@@ -1152,12 +1245,19 @@ function libCounts(VS,pl){const tags=new Map(),poss={all:0,GOLD:0,BLUE:0,score:0
    poss.all++;poss[P.team]++;pt>0?poss.score++:poss.empty++;if(E.some(e=>e.stat==='TO'))poss.to++})});
  return{tags,poss}}
 function libFilter(F){return{...F,mode:F.mode||$('libAs').value,pl:$('libPl').value}}
-function renderLibrary(){const VS=libScope(),pl=$('libPl').value,C=libCounts(VS,pl);
+let libSections=LIB_FOLDERS;
+// Offensive sets: their possessions + every shot they created. Defensive sets: possessions, stops, turnovers forced.
+function setSections(){const used=usedSets(libScope()),row=(label,F)=>[label,F,null,clipList(libFilter(F)).length];
+ const sec=side=>playbook[side].filter(x=>x.active!==false||used.has(side+':'+x.id)).flatMap(x=>{const code=side+':'+x.id;
+  return side==='off'?[row(x.name,{mode:'poss',set:code}),row(`↳ ${x.name} — shots`,{mode:'ev',set:code,tag:'Shot'})]
+   :[row(x.name,{mode:'poss',set:code}),row(`↳ ${x.name} — stops`,{mode:'poss',set:code,out:'empty'}),row(`↳ ${x.name} — turnovers forced`,{mode:'poss',set:code,out:'to'})]});
+ return[['Offensive sets',sec('off')],['Defensive sets',sec('def')]]}
+function renderLibrary(){const VS=libScope(),pl=$('libPl').value,C=libCounts(VS,pl);libSections=[...LIB_FOLDERS,...setSections()];
  const s=$('libPl'),v0=s.value;s.innerHTML='<option value="">All players</option>'+orderIds([...activeIds(),...VS.flatMap(x=>codedEvents(x).map(e=>e.p))]).map(id=>`<option value="${esc(id)}">${esc(pname(id))}</option>`).join('');s.value=v0;
  $('libScopeTxt').textContent=`${VS.length} practice${VS.length===1?'':'s'}${$('libFrom').value||$('libTo').value?' in range':''}${pl?' · '+pname(pl):''} · ${cloud?'this browser + cloud':'this browser only'}`;
- $('libFolders').innerHTML=LIB_FOLDERS.map(([sec,rows],si)=>`<div class="fsec">${sec}</div>`+rows.map(([label,F,pk],ri)=>{const n=pk?C.poss[pk]:C.tags.get(F.tag)||0,k=si+'|'+ri;
+ $('libFolders').innerHTML=libSections.map(([sec,rows],si)=>`<div class="fsec">${sec}</div>`+(rows.length?'':'<div class="faint" style="padding:4px 10px">Add sets in the Code tab (✎ edit sets).</div>')+rows.map(([label,F,pk,cnt],ri)=>{const n=cnt!=null?cnt:pk?C.poss[pk]:C.tags.get(F.tag)||0,k=si+'|'+ri;
   return `<div class="frow${libActive===k?' on':''}${n?'':' zero'}" data-lf="${k}">📁 ${esc(label)}<span class="cnt">${n}</span></div>`}).join('')).join('')}
-function openLibFolder(k){const[si,ri]=k.split('|').map(Number),row=LIB_FOLDERS[si]&&LIB_FOLDERS[si][1][ri];if(!row)return;
+function openLibFolder(k){const[si,ri]=k.split('|').map(Number),row=libSections[si]&&libSections[si][1][ri];if(!row)return;
  libActive=k;stopQueue();setFilters(libFilter(row[1]));renderLibrary();renderClips();st(`Library ▸ ${row[0]} — ${clipList().length} clips. Press ▶ Play filtered or click a clip.`)}
 $('libFolders').addEventListener('click',e=>{const r=e.target.closest('[data-lf]');if(r)openLibFolder(r.dataset.lf)});
 ['libPl','libAs','libFrom','libTo'].forEach(i=>$(i).addEventListener('change',()=>{$(i).blur();if(libActive)openLibFolder(libActive);else render()}));
@@ -1246,6 +1346,257 @@ async function loadFolders(){if(!cloud)return;
   folders.filter(f=>!f.synced).forEach(pushFolder);storeFolders();if(tab==='folders')renderFolders()}
  catch(err){if(/PGRST205|folders/.test(err.message))st('Saved-clip folders need the updated setup SQL — copy it from ☁ Cloud and run it in Supabase.')}}
 
+// ---------- Games: imported box scores (Sports Reference basic + advanced exports) ----------
+// Column keys follow Sports Reference's data-stat names, so their .xls exports map exactly; plain .xlsx/.csv map by header text.
+const G_BASIC=[['mp','MP','Minutes Played',0],['fg','FG','Field Goals',0],['fga','FGA','Field Goal Attempts',0],['fg_pct','FG%','Field Goal Percentage',3],
+ ['fg2','2P','2-Point Field Goals',0],['fg2a','2PA','2-Point Field Goal Attempts',0],['fg2_pct','2P%','2-Point Field Goal Percentage',3],
+ ['fg3','3P','3-Point Field Goals',0],['fg3a','3PA','3-Point Field Goal Attempts',0],['fg3_pct','3P%','3-Point Field Goal Percentage',3],
+ ['ft','FT','Free Throws',0],['fta','FTA','Free Throw Attempts',0],['ft_pct','FT%','Free Throw Percentage',3],
+ ['orb','ORB','Offensive Rebounds',0],['drb','DRB','Defensive Rebounds',0],['trb','TRB','Total Rebounds',0],['ast','AST','Assists',0],['stl','STL','Steals',0],
+ ['blk','BLK','Blocks',0],['tov','TOV','Turnovers',0],['pf','PF','Personal Fouls',0],['pts','PTS','Points',0],['game_score','GmSc','Game Score (Hollinger): 40 is outstanding, 10 is average',1]];
+const G_ADV=[['mp','MP','Minutes Played',0],['ts_pct','TS%','True Shooting %: shooting efficiency counting 2s, 3s and free throws',3],['efg_pct','eFG%','Effective FG %: counts a 3 as 1.5 makes',3],
+ ['fg3a_per_fga_pct','3PAr','3-Point Attempt Rate: share of FG attempts from three',3],['fta_per_fga_pct','FTr','Free Throw Attempt Rate: FT attempts per FG attempt',3],
+ ['orb_pct','ORB%','Offensive Rebound %: share of available offensive rebounds grabbed while on the floor',1],['drb_pct','DRB%','Defensive Rebound %',1],['trb_pct','TRB%','Total Rebound %',1],
+ ['ast_pct','AST%','Assist %: share of teammate field goals assisted while on the floor',1],['stl_pct','STL%','Steal %: share of opponent possessions ending in a steal by the player',1],
+ ['blk_pct','BLK%','Block %: share of opponent 2-point attempts blocked',1],['tov_pct','TOV%','Turnover %: turnovers per 100 plays',1],['usg_pct','USG%','Usage %: share of team plays used while on the floor',1],
+ ['off_rtg','ORtg','Offensive Rating: points produced per 100 possessions',0],['def_rtg','DRtg','Defensive Rating: points allowed per 100 possessions',0]];
+const G_HDR={starters:'player',reserves:'player',player:'player'};[...G_BASIC,...G_ADV].forEach(([k,l])=>{G_HDR[l.toLowerCase()]=k});
+const slugName=n=>String(n).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const statNum=v=>{v=String(v??'').trim();if(!v)return null;const m=v.match(/^(\d+):(\d\d)$/);if(m)return +m[1]+ +m[2]/60;const n=Number(v.replace(/,/g,''));return isFinite(n)?n:null};
+// One table (header keys + text rows) → {kind, players, totals}
+function boxFromRows(keys,rows,ids){const out={kind:keys.includes('ts_pct')||keys.includes('usg_pct')?'adv':keys.includes('fga')?'basic':null,players:[],totals:null};let starter=true;
+ rows.forEach((r,i)=>{const name=String(r[0]??'').trim();if(!name)return;
+  if(/^reserves$/i.test(name)){starter=false;return}
+  const stats={};keys.forEach((k,j)=>{if(k&&k!=='player')stats[k]=statNum(r[j])});
+  if(Object.values(stats).every(x=>x==null))return; // header repeats, "Did Not Play", blank rows
+  if(/(school|team)\s+totals?/i.test(name)){out.totals=stats;return}
+  out.players.push({key:slugName(name),srid:ids&&ids[i]||null,name,starter,stats})});
+ // Sports Reference's export drops the "Reserves" divider row; the first five listed are always the starters.
+ if(starter&&out.players.length>5)out.players.forEach((p,i)=>{p.starter=i<5});
+ return out}
+function parseHtmlBox(text){const doc=new DOMParser().parseFromString(text,'text/html');
+ return[...doc.querySelectorAll('table')].map(tb=>{const hr=[...tb.querySelectorAll('thead tr')].filter(tr=>!tr.classList.contains('over_header')).at(-1)||tb.querySelector('tr');if(!hr)return null;
+  const keys=[...hr.children].map((th,j)=>th.dataset.stat||G_HDR[th.textContent.trim().toLowerCase()]||(j===0?'player':null));keys[0]='player';
+  const trs=[...tb.querySelectorAll('tbody tr, tfoot tr')];
+  return boxFromRows(keys,trs.map(tr=>[...tr.children].map(c=>c.textContent)),trs.map(tr=>tr.firstElementChild&&tr.firstElementChild.dataset.appendCsv||null))}).filter(b=>b&&b.kind)}
+let xlsxLib=null;
+function loadXLSX(){return xlsxLib||(xlsxLib=new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';s.onload=()=>res(window.XLSX);s.onerror=()=>{xlsxLib=null;rej(new Error('could not load the spreadsheet reader'))};document.head.appendChild(s)}))}
+async function parseWorkbook(buf){const X=await loadXLSX(),wb=X.read(buf,{type:'array'});
+ return wb.SheetNames.flatMap(n=>{const m=X.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:false,defval:''}),cell=(r,j)=>String(r[j]??'').trim();
+  // A sheet can hold more than one table; each starts at a header row (has MP plus FG or TS%) that isn't the "Reserves" divider.
+  const starts=m.map((r,i)=>r.some(c=>String(c).trim()==='MP')&&r.some(c=>['FG','TS%'].includes(String(c).trim()))&&!/^reserves$/i.test(cell(r,0))?i:-1).filter(i=>i>=0);
+  return starts.map((hi,ti)=>boxFromRows(m[hi].map((c,j)=>j===0?'player':G_HDR[String(c).trim().toLowerCase()]||null),m.slice(hi+1,starts[ti+1]??m.length),null))}).filter(b=>b.kind)}
+async function readBoxFile(f){const buf=await f.arrayBuffer(),txt=new TextDecoder().decode(buf.slice(0,800)).trimStart();
+ return txt.startsWith('<')?parseHtmlBox(new TextDecoder().decode(buf)):parseWorkbook(buf)}
+// Join the basic and advanced tables player by player (by name — both sheets list the same players).
+function mergeBox(basic,adv){const m=new Map();
+ [[basic,'basic'],[adv,'adv']].forEach(([b,k])=>{if(!b)return;b.players.forEach(p=>{const cur=m.get(p.key)||{key:p.key,srid:p.srid,name:p.name,starter:p.starter,basic:null,adv:null};
+  cur[k]=p.stats;if(k==='basic')cur.starter=p.starter;cur.srid=cur.srid||p.srid;m.set(p.key,cur)})});
+ return[...m.values()]}
+let games=LS.get('games')||[],gSel=new Set(),gView=null,gPending=null,gMode='pg';const gameTimers={},gSort={};
+const storeGames=()=>LS.set('games',games);
+const gameLabel=g=>`${g.site==="away"?"at":"vs"} ${g.opp||"Opponent"}`;
+const gResult=g=>g.ptsFor!=null&&g.ptsAgainst!=null?(g.ptsFor>g.ptsAgainst?'W':g.ptsFor<g.ptsAgainst?'L':'T'):'';
+const fmtS=(v,d)=>v==null||!isFinite(v)?'':d===3?(Math.abs(v)<1?v.toFixed(3).replace(/^(-?)0\./,'$1.'):v.toFixed(3)):d===1?v.toFixed(1):Number.isInteger(v)?String(v):v.toFixed(1);
+const rosterIdByName=n=>{const k=slugName(n);return roster.find(r=>slugName(r.name)===k)?.id};
+async function importFiles(files){const found=[];
+ for(const f of files){try{(await readBoxFile(f)).forEach(b=>found.push({b,file:f.name}))}catch(err){st(`Couldn't read ${f.name} — ${err.message}`)}}
+ if(!found.length){st('No box score found in those files — expected the Basic or Advanced box score table.');return}
+ gPending=gPending||{basic:null,adv:null,files:[],date:localDate(new Date()),opp:'',site:'home'};
+ found.forEach(({b,file})=>{gPending[b.kind]=b;gPending.files.push(file)});renderGamePreview()}
+function pendingScores(P){const bt=P.basic&&P.basic.totals,at=P.adv&&P.adv.totals,us=bt&&bt.pts!=null?bt.pts:null;
+ const est=us!=null&&at&&at.off_rtg&&at.def_rtg?Math.round(us*at.def_rtg/at.off_rtg):null;return{us,est}}
+function renderGamePreview(){const P=gPending,box=$('gPreview');if(!P){box.classList.add('hidden');box.innerHTML='';return}
+ const{us,est}=pendingScores(P),pl=mergeBox(P.basic,P.adv),both=pl.filter(x=>x.basic&&x.adv).length;
+ const line=(b,lab)=>b?`✅ <b>${lab}</b> — ${b.players.length} players${b.totals?' + School Totals':''}`:`<span class="faint">○ ${lab} — not added yet (optional; drop it in to attach it)</span>`;
+ box.classList.remove('hidden');box.className='gprev';
+ box.innerHTML=`<div>${line(P.basic,'Basic box score')}<br>${line(P.adv,'Advanced box score')}${P.basic&&P.adv?`<br><span class="faint">Matched ${both} of ${pl.length} players across both sheets.</span>`:''}</div>
+  <div class="gform">
+   <label class="f">Date<input type="date" id="gpDate" value="${esc(P.date)}"></label>
+   <label class="f">Opponent<input id="gpOpp" value="${esc(P.opp)}" placeholder="Opponent name"></label>
+   <label class="f">Site<select id="gpSite"><option value="home">Home</option><option value="away">Away</option><option value="neutral">Neutral</option></select></label>
+   <label class="f">Our score<input id="gpUs" type="number" value="${us??''}"></label>
+   <label class="f" title="${est!=null?'Estimated from team ORtg / DRtg — check it':''}">Their score${est!=null?' <span class="faint">(est.)</span>':''}<input id="gpThem" type="number" value="${P.them??est??''}"></label>
+   <div style="display:flex;gap:6px"><button class="bt grn sm" id="gpSave">Save game</button><button class="bt gry sm" id="gpCancel">Cancel</button></div>
+  </div>`;
+ $('gpSite').value=P.site||'home'}
+$('gamesView').addEventListener('input',e=>{if(!gPending)return;const t=e.target;
+ if(t.id==='gpDate')gPending.date=t.value;if(t.id==='gpOpp')gPending.opp=t.value;if(t.id==='gpSite')gPending.site=t.value;if(t.id==='gpThem')gPending.them=t.value===''?null:+t.value;if(t.id==='gpUs')gPending.us=t.value===''?null:+t.value});
+function saveGame(){const P=gPending;if(!P)return;const opp=$('gpOpp').value.trim();if(!opp){st('Add the opponent before saving');$('gpOpp').focus();return}
+ const date=$('gpDate').value,dup=games.find(g=>g.date===date&&slugName(g.opp)===slugName(opp));
+ if(dup&&!confirm(`There's already a game on ${prettyDate(date)} vs ${dup.opp}. Replace it?`))return;
+ const g={id:dup?dup.id:newId(),date,opp,site:$('gpSite').value,ptsFor:$('gpUs').value===''?null:+$('gpUs').value,ptsAgainst:$('gpThem').value===''?null:+$('gpThem').value,
+  players:mergeBox(P.basic,P.adv),totals:{basic:P.basic&&P.basic.totals||null,adv:P.adv&&P.adv.totals||null},files:P.files,created:dup?dup.created:new Date().toISOString(),updated:''};
+ games=games.filter(x=>x!==dup);games.push(g);touchGame(g);gPending=null;renderGamePreview();gSel.clear();gView=g.id;renderGames();st(`Saved ${gameLabel(g)} (${prettyDate(g.date)}) — ${g.players.length} players`)}
+// Attach a missing sheet (e.g. the Advanced one) to a game that's already saved.
+async function attachToGame(g,files){const found=[];for(const f of files){try{(await readBoxFile(f)).forEach(b=>found.push(b))}catch(err){st(`Couldn't read ${f.name} — ${err.message}`)}}
+ const basic=found.find(b=>b.kind==='basic'),adv=found.find(b=>b.kind==='adv');if(!basic&&!adv){st('No box score found in that file');return}
+ const cur={basic:{players:g.players.filter(p=>p.basic).map(p=>({...p,stats:p.basic})),totals:g.totals.basic},adv:{players:g.players.filter(p=>p.adv).map(p=>({...p,stats:p.adv})),totals:g.totals.adv}};
+ const B=basic||(cur.basic.players.length?cur.basic:null),A=adv||(cur.adv.players.length?cur.adv:null);
+ g.players=mergeBox(B,A);g.totals={basic:B&&B.totals||null,adv:A&&A.totals||null};if(basic&&basic.totals&&basic.totals.pts!=null)g.ptsFor=basic.totals.pts;touchGame(g);renderGames();st(`Updated ${gameLabel(g)} with the ${[basic&&'basic',adv&&'advanced'].filter(Boolean).join(' + ')} sheet`)}
+$('gFile').onchange=e=>{const fs=[...e.target.files];e.target.value='';if(fs.length)importFiles(fs)};
+const gd=$('gDrop');gd.addEventListener('dragover',e=>{e.preventDefault();gd.classList.add('drag')});gd.addEventListener('dragleave',()=>gd.classList.remove('drag'));
+gd.addEventListener('drop',e=>{e.preventDefault();gd.classList.remove('drag');const fs=[...e.dataTransfer.files];if(fs.length)importFiles(fs)});
+const gamesSorted=()=>[...games].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+function renderGames(){const list=gamesSorted(),n=gSel.size,w=games.filter(g=>gResult(g)==='W').length,l=games.filter(g=>gResult(g)==='L').length;
+ $('gSelInfo').textContent=list.length?`${n?n+' selected — combined below':'Tick games to combine them, or click one to open its box score'}`:'';
+ $('gRecord').textContent=list.length?`${list.length} game${list.length===1?'':'s'} · ${w}–${l}`:'';
+ $('gTable').innerHTML=list.length?`<tr><th style="width:28px"><input type="checkbox" id="gAllBox" ${n&&n===list.length?'checked':''}></th><th>Date</th><th>Opponent</th><th>Score</th><th>Players</th><th>Sheets</th><th></th></tr>`+list.map(g=>{const r=gResult(g);
+  return `<tr data-gid="${esc(g.id)}" class="${gSel.has(g.id)||gView===g.id&&!n?'on':''}" style="cursor:pointer"><td><input type="checkbox" data-gsel ${gSel.has(g.id)?'checked':''}></td><td>${esc(prettyDate(g.date))}</td><td><b>${esc(gameLabel(g))}</b></td>
+   <td class="n">${r?`<span class="wl ${r.toLowerCase()}">${r}</span> `:''}${g.ptsFor??'–'}–${g.ptsAgainst??'–'}</td><td class="n">${g.players.length}</td>
+   <td class="n">${g.totals.basic||g.players.some(p=>p.basic)?'<span class="badge">basic</span>':''}${g.totals.adv||g.players.some(p=>p.adv)?'<span class="badge">advanced</span>':''}</td>
+   <td class="n"><label class="bt gry sm" style="display:inline-flex;align-items:center" title="Attach the other sheet">＋ sheet<input type="file" data-gattach accept=".xls,.xlsx,.csv,.htm,.html" hidden></label> <button class="x" data-gdel title="Delete game">×</button></td></tr>`}).join('')
+  :'<tr><td class="faint" style="padding:16px">No games yet. Export the Basic and Advanced box scores from Sports Reference and drop both files above.</td></tr>';
+ const all=$('gAllBox');if(all)all.indeterminate=n>0&&n<list.length;
+ renderGameDetail()}
+$('gamesView').addEventListener('change',e=>{
+ if(e.target.id==='gAllBox'){if(e.target.checked)games.forEach(g=>gSel.add(g.id));else gSel.clear();renderGames();return}
+ const tr=e.target.closest('tr[data-gid]');if(!tr)return;const g=games.find(x=>x.id===tr.dataset.gid);
+ if(e.target.matches('[data-gsel]')){e.target.checked?gSel.add(g.id):gSel.delete(g.id);renderGames();return}
+ if(e.target.matches('[data-gattach]')){const fs=[...e.target.files];e.target.value='';if(fs.length)attachToGame(g,fs)}});
+$('gamesView').addEventListener('click',async e=>{
+ if(e.target.id==='gpSave'){saveGame();return}if(e.target.id==='gpCancel'){gPending=null;renderGamePreview();return}
+ const so=e.target.closest('th[data-gsort]');if(so){const t=so.dataset.gtbl,k=so.dataset.gsort;gSort[t]=gSort[t]&&gSort[t].k===k?{k,d:-gSort[t].d}:{k,d:-1};renderGameDetail();return}
+ const pl=e.target.closest('[data-proster]');if(pl){profP=pl.dataset.proster;LS.set('profilePlayer',profP);setTab('players');return}
+ if(e.target.id==='gModePg'||e.target.id==='gModeTot'){gMode=e.target.id==='gModePg'?'pg':'tot';renderGameDetail();return}
+ const tr=e.target.closest('#gTable tr[data-gid]');if(!tr||e.target.closest('input,label'))return;const g=games.find(x=>x.id===tr.dataset.gid);
+ if(e.target.closest('[data-gdel]')){if(!confirm(`Delete ${gameLabel(g)} (${prettyDate(g.date)})?`))return;games=games.filter(x=>x!==g);gSel.delete(g.id);if(gView===g.id)gView=null;storeGames();clearTimeout(gameTimers[g.id]);
+  if(cloud)try{await cloudFetch(`games?id=eq.${encodeURIComponent(g.id)}`,{method:'DELETE'})}catch(err){st('Cloud delete failed — '+err.message)}
+  renderGames();st(`Deleted ${gameLabel(g)}`);return}
+ gView=g.id;gSel.clear();renderGames();$('gDetail').scrollIntoView({behavior:'smooth',block:'start'})});
+$('gAll').onclick=()=>{games.forEach(g=>gSel.add(g.id));renderGames()};$('gNone').onclick=()=>{gSel.clear();renderGames()};
+// Player names link to their Players-tab profile when they match a roster name.
+const pnameCell=n=>{const id=rosterIdByName(n);return id?`<a class="plink" data-proster="${esc(id)}" title="Open profile">${esc(n)}</a>`:esc(n)};
+const sortRows=(rows,t,get)=>{const s=gSort[t];if(!s)return rows;return[...rows].sort((a,b)=>((get(a,s.k)??-1e9)-(get(b,s.k)??-1e9))*s.d)};
+const gTh=(cols,t,first,extra='')=>`<tr><th style="text-align:left">${first}</th>${extra}${cols.map(([k,l,tip])=>`<th class="sortable${gSort[t]&&gSort[t].k===k?' sorted':''}" data-gtbl="${t}" data-gsort="${k}" title="${esc(tip)}">${esc(l)}</th>`).join('')}</tr>`;
+function gameBoxHTML(g){const r=gResult(g),sec=(cols,kind,lab)=>{const ps=g.players.filter(p=>p[kind]),tot=g.totals[kind];if(!ps.length)return `<div class="faint" style="margin:6px 0">No ${lab.toLowerCase()} sheet for this game — use ＋ sheet in the list above to attach it.</div>`;
+  const row=p=>`<tr><td style="text-align:left">${pnameCell(p.name)}</td>${cols.map(([k,,,d])=>`<td>${fmtS(p[kind][k],d)}</td>`).join('')}</tr>`,t=kind+'1';
+  const st_=sortRows(ps.filter(p=>p.starter),t,(p,k)=>p[kind][k]),rs=sortRows(ps.filter(p=>!p.starter),t,(p,k)=>p[kind][k]);
+  return `<div class="sec">${lab}</div><div style="overflow-x:auto"><table class="st">${gTh(cols,t,'Starters')}${st_.map(row).join('')}${rs.length?`<tr class="sub"><td colspan="${cols.length+1}">Reserves</td></tr>${rs.map(row).join('')}`:''}
+   ${tot?`<tr class="tot"><td style="text-align:left">School Totals</td>${cols.map(([k,,,d])=>`<td>${fmtS(tot[k],d)}</td>`).join('')}</tr>`:''}</table></div>`};
+ return `<div class="ghead"><b>${r?`<span class="wl ${r.toLowerCase()}">${r}</span> `:''}${g.ptsFor??'–'}–${g.ptsAgainst??'–'} ${esc(gameLabel(g))}</b><span class="muted">${esc(prettyDate(g.date))}</span></div>`+
+  sec(G_BASIC,'basic','Basic Box Score Stats')+sec(G_ADV,'adv','Advanced Box Score Stats')}
+// TS% uses 0.475·FTA, matching Sports Reference's college numbers.
+// Combined across games: counting stats summed, shooting %s / TS% / eFG% / 3PAr / FTr recomputed exactly,
+// the rate stats (ORB%, USG%, ORtg …) averaged by minutes — they need team + opponent data a player box can't rebuild.
+const EXACT={fg_pct:['fg','fga'],fg2_pct:['fg2','fg2a'],fg3_pct:['fg3','fg3a'],ft_pct:['ft','fta']};
+function aggregate(G){const m=new Map();
+ G.forEach(g=>g.players.forEach(p=>{const a=m.get(p.key)||{key:p.key,name:p.name,gp:0,gs:0,b:{},advW:{},advM:{},mpAdv:0};
+  if(p.basic||p.adv)a.gp++;if(p.starter)a.gs++;
+  if(p.basic)G_BASIC.forEach(([k])=>{if(!EXACT[k]&&p.basic[k]!=null)a.b[k]=(a.b[k]||0)+p.basic[k]});
+  if(p.adv){const mp=p.adv.mp||0;a.mpAdv+=mp;G_ADV.forEach(([k])=>{if(k!=='mp'&&p.adv[k]!=null){a.advW[k]=(a.advW[k]||0)+p.adv[k]*mp;a.advM[k]=(a.advM[k]||0)+mp}})}
+  m.set(p.key,a)}));
+ return[...m.values()].map(a=>{const b=a.b,dv=(x,y)=>b[y]?b[x]/b[y]:null;Object.entries(EXACT).forEach(([k,[x,y]])=>{b[k]=dv(x,y)});
+  const adv={};G_ADV.forEach(([k])=>{adv[k]=a.advM[k]?a.advW[k]/a.advM[k]:null});
+  if(b.fga!=null){adv.ts_pct=b.fga+0.475*(b.fta||0)?b.pts/(2*(b.fga+0.475*(b.fta||0))):null;adv.efg_pct=b.fga?(b.fg+0.5*(b.fg3||0))/b.fga:null;adv.fg3a_per_fga_pct=b.fga?(b.fg3a||0)/b.fga:null;adv.fta_per_fga_pct=b.fga?(b.fta||0)/b.fga:null}
+  adv.mp=b.mp??(a.mpAdv||null);return{...a,b,adv}})}
+function combinedHTML(G){const A=aggregate(G),pg=gMode==='pg',per=(a,k,d)=>{const v=a.b[k];if(v==null)return'';if(EXACT[k])return fmtS(v,3);return pg?(a.gp?(v/a.gp).toFixed(1):''):fmtS(v,d)};
+ const w=G.filter(g=>gResult(g)==='W').length,l=G.filter(g=>gResult(g)==='L').length,sc=G.filter(g=>g.ptsFor!=null&&g.ptsAgainst!=null);
+ const avgF=sc.length?(sc.reduce((s,g)=>s+g.ptsFor,0)/sc.length).toFixed(1):'–',avgA=sc.length?(sc.reduce((s,g)=>s+g.ptsAgainst,0)/sc.length).toFixed(1):'–';
+ const bRows=sortRows(A.filter(a=>Object.keys(a.b).length),'cb',(a,k)=>k==='gp'?a.gp:k==='gs'?a.gs:a.b[k]==null?null:EXACT[k]?a.b[k]:pg?a.b[k]/a.gp:a.b[k]);
+ const aRows=sortRows(A.filter(a=>a.mpAdv||a.b.fga!=null),'ca',(a,k)=>a.adv[k]);
+ const approx=new Set(['orb_pct','drb_pct','trb_pct','ast_pct','stl_pct','blk_pct','tov_pct','usg_pct','off_rtg','def_rtg']);
+ return `<div class="ghead"><b>${G.length} games combined</b><span class="muted">${w}–${l}${sc.length?` · avg ${avgF}–${avgA}`:''} · ${esc(G.map(g=>prettyDate(g.date)).join(', '))}</span><span style="flex:1"></span>
+  <span class="seg-ctl"><button class="bt sm ${pg?'on':''}" id="gModePg">Per game</button><button class="bt sm ${pg?'':'on'}" id="gModeTot">Totals</button></span></div>
+  <div class="sec">Basic — ${pg?'per game':'totals'} <span class="faint">(shooting % from made / attempted across the games)</span></div><div style="overflow-x:auto"><table class="st">${gTh(G_BASIC,'cb','Player',`<th class="sortable" data-gtbl="cb" data-gsort="gp">GP</th><th class="sortable" data-gtbl="cb" data-gsort="gs">GS</th>`)}
+  ${bRows.map(a=>`<tr><td style="text-align:left">${pnameCell(a.name)}</td><td>${a.gp}</td><td>${a.gs}</td>${G_BASIC.map(([k,,,d])=>`<td>${per(a,k,d)}</td>`).join('')}</tr>`).join('')}</table></div>
+  <div class="sec">Advanced <span class="faint">(TS%, eFG%, 3PAr, FTr exact · <span class="approx">grey</span> = minutes-weighted average of each game's number)</span></div><div style="overflow-x:auto"><table class="st">${gTh(G_ADV,'ca','Player')}
+  ${aRows.map(a=>`<tr><td style="text-align:left">${pnameCell(a.name)}</td>${G_ADV.map(([k,,,d])=>k==='mp'?`<td>${a.adv.mp!=null?(pg?(a.adv.mp/a.gp).toFixed(1):fmtS(a.adv.mp,0)):''}</td>`:`<td class="${approx.has(k)?'approx':''}">${fmtS(a.adv[k],d)}</td>`).join('')}</tr>`).join('')}</table></div>`}
+function renderGameDetail(){const sel=games.filter(g=>gSel.has(g.id)).sort((a,b)=>(a.date||'').localeCompare(b.date||'')),one=sel.length===1?sel[0]:!sel.length?games.find(g=>g.id===gView):null;
+ $('gDetail').innerHTML=sel.length>1?combinedHTML(sel):one?gameBoxHTML(one):`<span class="faint">${games.length?'Click a game to see its box score, or tick several to combine them.':'Imported games show up here.'}</span>`;
+ $('gDetail').classList.toggle('hidden',!games.length&&!gPending)}
+// Players-tab profile: game stats for the roster player whose name matches the box score.
+function renderProfGames(){const el=$('profGames');if(!el)return;const k=slugName(pname(profP));
+ const rows=gamesSorted().map(g=>({g,p:g.players.find(p=>p.key===k)})).filter(x=>x.p&&x.p.basic);
+ if(!rows.length){el.innerHTML='';return}
+ const A=aggregate(rows.map(x=>x.g)).find(a=>a.key===k),cols=[['mp','MP',0],['pts','PTS',0],['fg','FG',0],['fga','FGA',0],['fg3','3P',0],['fg3a','3PA',0],['ft','FT',0],['fta','FTA',0],['trb','TRB',0],['ast','AST',0],['stl','STL',0],['blk','BLK',0],['tov','TOV',0],['game_score','GmSc',1]];
+ el.innerHTML=`<div class="sec">Games <span class="faint">· from imported box scores (Games tab)</span></div><div style="overflow-x:auto"><table class="st"><tr><th style="text-align:left">Game</th>${cols.map(c=>`<th>${c[1]}</th>`).join('')}<th>TS%</th><th>USG%</th></tr>
+  <tr class="tot"><td style="text-align:left">Per game (${rows.length} GP)</td>${cols.map(([k])=>`<td>${A.b[k]!=null?(A.b[k]/A.gp).toFixed(1):''}</td>`).join('')}<td>${fmtS(A.adv.ts_pct,3)}</td><td class="approx">${fmtS(A.adv.usg_pct,1)}</td></tr>
+  ${rows.map(({g,p})=>`<tr><td style="text-align:left">${esc(prettyDate(g.date))} ${esc(gameLabel(g))} ${gResult(g)?`<span class="wl ${gResult(g).toLowerCase()}">${gResult(g)}</span>`:''}</td>${cols.map(([k,,d])=>`<td>${fmtS(p.basic[k],d)}</td>`).join('')}<td>${fmtS(p.adv&&p.adv.ts_pct,3)}</td><td>${fmtS(p.adv&&p.adv.usg_pct,1)}</td></tr>`).join('')}</table></div>`}
+// Cloud: one row per game; the newer copy wins, and a game deleted elsewhere disappears here too.
+function touchGame(g){g.updated=new Date().toISOString();storeGames();if(cloud){clearTimeout(gameTimers[g.id]);gameTimers[g.id]=setTimeout(()=>pushGame(g),800)}}
+async function pushGame(g){delete gameTimers[g.id];if(!cloud||!games.includes(g))return;
+ try{await cloudFetch('games',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify([{id:g.id,game_date:g.date||null,opponent:g.opp||null,data:g,updated_at:g.updated}])});g.synced=true;storeGames()}
+ catch(err){st('Game sync failed — '+err.message+(/PGRST205|games/.test(err.message)?' — copy the setup SQL from ☁ Cloud and run it again':''))}}
+async function loadGames(){if(!cloud)return;
+ try{const rows=await cloudFetch('games?select=id,data,updated_at'),ids=new Set(rows.map(r=>r.id)),T=x=>Date.parse(x||0)||0;
+  games=games.filter(g=>ids.has(g.id)||!g.synced);
+  rows.forEach(r=>{const cg={...r.data,id:r.id,synced:true},g=games.find(x=>x.id===r.id);if(!g)games.push(cg);else if(T(cg.updated)>T(g.updated))Object.assign(g,cg);else g.synced=true});
+  games.filter(g=>!g.synced).forEach(pushGame);storeGames();if(tab==='games')renderGames()}
+ catch(err){if(/PGRST205|games/.test(err.message))st('Games need the updated setup SQL — copy it from ☁ Cloud and run it in Supabase.')}}
+
+// ---------- Sets: tag each possession's offensive / defensive set, then see how they work ----------
+// Tags store the set's id (and its name as a fallback), so renaming a set carries its history with it.
+const DEFAULT_PB={off:['Horns','Flex','Motion','Pick & roll','Transition'],def:['Man','2-3 zone','1-3-1 zone','Press','Switch all']};
+let playbook=LS.get('playbook')||{updated:'',off:DEFAULT_PB.off.map(name=>({id:newId(),name})),def:DEFAULT_PB.def.map(name=>({id:newId(),name}))};
+const setItem=id=>playbook.off.find(x=>x.id===id)||playbook.def.find(x=>x.id===id);
+const setName=(id,fallback)=>setItem(id)?.name||fallback||'Deleted set';
+const setLabel=code=>{const[side,id]=code.split(':');return `${setName(id)} (${side==='off'?'offense':'defense'})`};
+const setMatch=(sets,code)=>{const[side,id]=code.split(':');return(sets[side]||'')===id};
+const setChips=sets=>sets?['off','def'].filter(k=>sets[k]).map(k=>`<span class="chip set" title="${k==='off'?'Offensive':'Defensive'} set">${k==='off'?'O':'D'}: ${esc(setName(sets[k]))}</span>`).join(''):'';
+const activeSets=side=>playbook[side].filter(x=>x.active!==false);
+function usedSets(VS){const u=new Set();VS.forEach(s=>s.events.forEach(e=>{if(e.k==='set')u.add(e.side+':'+e.set)}));return u}
+function setOptions(){const used=usedSets(viewSessions()),grp=(side,lab)=>{const list=playbook[side].filter(x=>x.active!==false||used.has(side+':'+x.id));
+  return list.length?`<optgroup label="${lab}">${list.map(x=>`<option value="${side}:${esc(x.id)}">${esc(x.name)}</option>`).join('')}</optgroup>`:''};
+ return grp('off','Offensive sets')+grp('def','Defensive sets')}
+function tagSet(side,idx){const it=activeSets(side)[idx],word=side==='off'?'offensive':'defensive';
+ if(!it){st(`No ${word} set #${idx+1} — add one with ✎ edit sets`);return}
+ const t=now(),P=possAt(S,t);if(!P){st('Start a possession first (P), then tag its set');return}
+ const had=S.events.filter(e=>e.k==='set'&&e.side===side&&inPoss(P,e.t)),same=had.some(e=>e.set===it.id);
+ S.events=S.events.filter(e=>!had.includes(e));
+ if(same){save();render();drawSets();st(`Removed ${word} set from ${P.team} possession #${P.tn}`);return}
+ add({k:'set',side,set:it.id,name:it.name,team:side==='off'?P.team:OTHER[P.team]});drawSets();flash(side==='off'?'setoff':'setdef');
+ st(`${P.team} possession #${P.tn} ▸ ${side==='off'?'Offense':'Defense'}: ${it.name}`)}
+let setsShownFor=null;
+function drawSets(){const P=tab==='code'?possAt(S,now()):null,x=P?floorData(S).byId.get(P.id):null,cur=x?x.sets:{off:'',def:''};
+ ['off','def'].forEach(side=>{$(side+'SetBtns').innerHTML=activeSets(side).map((it,i)=>`<button class="bt gry${cur[side]===it.id?' on':''}" data-setside="${side}" data-seti="${i}" title="${esc(it.name)}${i<9?` — ${side==='off'?'⇧':'⌥'} ${i+1}`:''}">${i<9?`<small>${i+1}</small>`:''}${esc(it.name)}</button>`).join('')
+  ||`<span class="faint" style="padding:8px">No ${side==='off'?'offensive':'defensive'} sets — ✎ edit sets</span>`});
+ $('setNow').innerHTML=P?`${P.team} possession #${P.tn} · Off: <b>${cur.off?esc(setName(cur.off)):'—'}</b> · Def: <b>${cur.def?esc(setName(cur.def)):'—'}</b>`:'Start a possession to tag its sets';
+ setsShownFor=P?P.id+'|'+cur.off+'|'+cur.def:null}
+$('setsBlk').addEventListener('click',e=>{const b=e.target.closest('[data-setside]');if(b)tagSet(b.dataset.setside,+b.dataset.seti)});
+// Playbook editor
+function renderPlaybook(){const col=(side,lab)=>`<div><div class="sec" style="margin-top:0">${lab}</div>${playbook[side].filter(x=>x.active!==false).map((x,i)=>
+  `<div class="row"><span class="k">${i<9?i+1:''}</span><input class="txt" style="flex:1" data-pbid="${esc(x.id)}" value="${esc(x.name)}"><button class="x" data-pbup="${esc(x.id)}" title="Move up (changes its hotkey)">↑</button><button class="x" data-pbdel="${esc(x.id)}" title="Remove">×</button></div>`).join('')}
+  <div class="row"><span class="k"></span><input class="txt" style="flex:1" data-pbnew="${side}" placeholder="Add a ${side==='off'?'play':'defense'}…"></div></div>`;
+ $('pbEditor').innerHTML=`<div class="pbcols">${col('off','Offensive sets (⇧ + #)')}${col('def','Defensive sets (⌥ + #)')}</div>
+  <div class="faint" style="font-size:11px;margin-top:4px">Order sets the hotkey number. Removing a set keeps its past tags and stats. ${cloud?'Shared with the staff through the cloud.':'Saved in this browser — connect ☁ Cloud to share it with the staff.'}</div>`}
+function savePlaybook(){playbook.updated=new Date().toISOString();LS.set('playbook',playbook);drawSets();renderPlaybook();fillFilters();render();queuePlaybookCloud()}
+$('pbEdit').onclick=()=>{const hid=$('pbEditor').classList.toggle('hidden');$('pbEdit').textContent=hid?'✎ edit sets':'done';if(!hid)renderPlaybook()};
+$('pbEditor').addEventListener('change',e=>{const t=e.target,v=t.value.trim();
+ if(t.dataset.pbid){const x=setItem(t.dataset.pbid);if(x&&v){x.name=v;savePlaybook()}else t.value=x?x.name:''}
+ if(t.dataset.pbnew&&v){playbook[t.dataset.pbnew].push({id:newId(),name:v});savePlaybook();const n=$('pbEditor').querySelector(`[data-pbnew="${t.dataset.pbnew}"]`);if(n)n.focus()}});
+$('pbEditor').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches('input'))e.target.blur()});
+$('pbEditor').addEventListener('click',e=>{const d=e.target.closest('[data-pbdel]'),u=e.target.closest('[data-pbup]');
+ if(d){const x=setItem(d.dataset.pbdel);if(x&&confirm(`Remove “${x.name}”? Past tags keep it in the stats.`)){x.active=false;savePlaybook()}}
+ if(u){const side=playbook.off.some(x=>x.id===u.dataset.pbup)?'off':'def',a=playbook[side],i=a.findIndex(x=>x.id===u.dataset.pbup);
+  let j=i-1;while(j>=0&&a[j].active===false)j--;if(j>=0){[a[i],a[j]]=[a[j],a[i]];savePlaybook()}}});
+// Cloud: one shared playbook row; the newer copy wins.
+let pbTimer=null;
+function queuePlaybookCloud(){if(!cloud)return;clearTimeout(pbTimer);pbTimer=setTimeout(pushPlaybook,1200)}
+async function pushPlaybook(){if(!cloud)return;
+ try{await cloudFetch('playbook',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify([{id:'team',data:playbook,updated_at:playbook.updated||new Date().toISOString()}])})}
+ catch(err){st('Set list sync failed — '+err.message+(/PGRST205|playbook/.test(err.message)?' — copy the setup SQL from ☁ Cloud and run it again':''))}}
+async function loadPlaybook(){if(!cloud)return;
+ try{const rows=await cloudFetch('playbook?id=eq.team&select=data,updated_at'),T=x=>Date.parse(x||0)||0;
+  if(rows.length&&rows[0].data&&T(rows[0].data.updated||rows[0].updated_at)>T(playbook.updated)){playbook=rows[0].data;LS.set('playbook',playbook);drawSets();fillFilters();render();if(!$('pbEditor').classList.contains('hidden'))renderPlaybook()}
+  else if(!rows.length)pushPlaybook()}
+ catch(err){if(/PGRST205|playbook/.test(err.message))st('Shared set list needs the updated setup SQL — copy it from ☁ Cloud and run it in Supabase.')}}
+// Effectiveness: offense = points per possession; defense = stop % (0 points allowed) and turnovers forced.
+function setStats(VS){const off=new Map(),def=new Map(),blank=()=>({poss:0,pts:0,scored:0,to:0,fga:0,fgm:0});
+ const get=(m,k)=>{if(!m.has(k))m.set(k,blank());return m.get(k)};
+ VS.forEach(s=>floorData(s).poss.forEach(({P,E,pt,sets})=>{const o=pt[P.team],to=E.some(e=>e.stat==='TO'),sh=E.filter(e=>e.k==='shot'&&e.team===P.team);
+  [[off,sets.off],[def,sets.def]].forEach(([m,id])=>{const r=get(m,id);r.poss++;r.pts+=o;if(o>0)r.scored++;if(to)r.to++;r.fga+=sh.length;r.fgm+=sh.filter(e=>e.make).length})}));
+ return{off,def}}
+function renderSetTables(VS){const{off,def}=setStats(VS),ord=(side,m)=>{const ids=[...m.keys()].filter(Boolean);
+  return ids.sort((a,b)=>{const ia=playbook[side].findIndex(x=>x.id===a),ib=playbook[side].findIndex(x=>x.id===b);return(ia<0?1e9:ia)-(ib<0?1e9:ib)})};
+ const offIds=ord('off',off),defIds=ord('def',def),un=(m,lab)=>{const r=m.get('');return r&&r.poss?`<tr class="faint"><td style="text-align:left">${lab}</td><td>${r.poss}</td><td colspan="6"></td></tr>`:''};
+ if(!offIds.length&&!defIds.length){$('setTables').innerHTML='<span class="faint">No sets tagged in these practices yet. While coding, press ⇧ + number for the offense\'s set and ⌥ + number for the defense\'s.</span>';return}
+ const C=(n,F,txt)=>cell(n,F,txt);
+ $('setTables').innerHTML=(offIds.length?`<table class="st setTbl"><tr><th style="text-align:left">Offensive set</th><th>Poss</th><th>Pts</th><th title="Average points per possession">PPP</th><th title="Possessions with points">Score%</th><th>TO%</th><th>FG</th><th>FG%</th></tr>${offIds.map(id=>{const r=off.get(id),code='off:'+id;
+  return `<tr><td style="text-align:left">${esc(setName(id))}</td>${C(r.poss,{set:code})}${C(r.pts,{set:code,out:'score'})}<td><b>${ppp(r.pts,r.poss)}</b></td><td>${pct(r.scored,r.poss)}</td>${C(r.to,{set:code,out:'to'},pct(r.to,r.poss))}${C(r.fga,{set:code,tag:'Shot',mode:'ev'},`${r.fgm}-${r.fga}`)}<td>${pct(r.fgm,r.fga)}</td></tr>`}).join('')}${un(off,'No set tagged')}</table>`:'')+
+  (defIds.length?`<table class="st setTbl"><tr><th style="text-align:left">Defensive set</th><th>Poss</th><th title="Possessions with 0 points allowed">Stops</th><th>Stop%</th><th title="Possessions ending in an offensive turnover">TOs forced</th><th>TO%</th><th>Pts allowed</th><th title="Points allowed per possession">PPP allowed</th></tr>${defIds.map(id=>{const r=def.get(id),code='def:'+id,stops=r.poss-r.scored;
+  return `<tr><td style="text-align:left">${esc(setName(id))}</td>${C(r.poss,{set:code})}${C(stops,{set:code,out:'empty'})}<td><b>${pct(stops,r.poss)}</b></td>${C(r.to,{set:code,out:'to'})}<td>${pct(r.to,r.poss)}</td>${C(r.pts,{set:code,out:'score'})}<td>${ppp(r.pts,r.poss)}</td></tr>`}).join('')}${un(def,'No set tagged')}</table>`:'')}
+
 // ---------- Shot chart component (stat sheet + player profiles) ----------
 const COURT=[...$('court').children].filter(n=>n.id!=='pin').map(n=>n.outerHTML).join('');
 const pct=(m,a)=>a?Math.round(m/a*100)+'%':'–';
@@ -1313,7 +1664,7 @@ function renderPlayers(){
  $('profHead').innerHTML=`<div class="phead"><b>${esc(pname(profP))}</b>${RM.get(profP)?.number?`<span class="muted">#${esc(RM.get(profP).number)}</span>`:''}<span class="muted">${np} practice${np===1?'':'s'} played · ${prettyDate(mine[0].s.date)}${np>1?' – '+prettyDate(mine.at(-1).s.date):''} · on the floor for ${onP} possession${onP===1?'':'s'}</span></div>
   <div class="tiles">${[['Points',L.pts,`${per(L.pts)} per practice`],['FG',`${L.fgm}-${L.fga}`,pct(L.fgm,L.fga)],['3PT',`${L.tpm}-${L.tpa}`,pct(L.tpm,L.tpa)],['FT',`${L.ftm}-${L.fta}`,pct(L.ftm,L.fta)],['eFG%',efg,'(FGM + ½·3PM) / FGA'],
    ['Rebounds',L.reb,`${L.c('OREB')} off · ${L.c('DREB')} def`],['Assists',L.c('AST'),`AST/TO ${ato}`],['Turnovers',L.c('TO'),`${per(L.c('TO'))} per practice`],['Stocks',L.c('STL')+L.c('BLK'),`${L.c('STL')} stl · ${L.c('BLK')} blk`],
-   (r=>['+/−',`<span class="${r.pm>0?'pos':r.pm<0?'neg':''}">${signed(r.pm)}</span>`,`${r.op+r.dp} poss on floor · net ${netStr(r)}`])(onR)]
+   (r=>['+/−',`<span class="${r.pm>0?'pm-pos':r.pm<0?'pm-neg':''}">${signed(r.pm)}</span>`,`${r.op+r.dp} poss on floor · net ${netStr(r)}`])(onR)]
    .map(([l,v,s])=>`<div class="tile"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join('')}</div>`;
  const T=F=>({pl:profP,...F});
  const cols=[['Pts',L.pts,{tag:'Scoring'},per(L.pts)],['FG',`${L.fgm}-${L.fga}`,{tag:'Shot'},`${per(L.fgm)}-${per(L.fga)}`,L.fga],['FG%',null,null,pct(L.fgm,L.fga)],
@@ -1329,7 +1680,7 @@ function renderPlayers(){
  $('profFT').innerHTML=`<table class="st"><tr><th style="text-align:left">Free throws</th><th>FT</th><th>FT%</th><th>Per practice</th></tr><tr><td style="text-align:left">All</td>${cell(L.fta,T({tag:'FT'}),`${fm}-${L.fta}`)}<td>${pct(fm,L.fta)}</td><td>${per(fm)}-${per(L.fta)}</td></tr></table>`;
  const lc=[['Pts',l=>l.pts,{tag:'Scoring'}],['FG',l=>`${l.fgm}-${l.fga}`,{tag:'Shot'},l=>l.fga],['3P',l=>`${l.tpm}-${l.tpa}`,{tag:'3PT'},l=>l.tpa],['FT',l=>`${l.ftm}-${l.fta}`,{tag:'FT'},l=>l.fta],['REB',l=>l.reb,{tag:'REB'}],...STATS.map(s=>[s[0],l=>l.c(s[0]),{tag:s[0]}])];
  $('profLog').innerHTML=`<table class="st"><tr><th style="text-align:left">Date</th><th style="text-align:left">Practice</th>${lc.map(c=>`<th>${esc(c[0])}</th>`).join('')}</tr>${[...mine].reverse().map(({s,E})=>{const l=statLine(E);
-  return `<tr data-sid="${esc(s.id)}"><td style="text-align:left">${esc(prettyDate(s.date))}</td><td style="text-align:left">${esc(s.name||'Untitled')}</td>${lc.map(([,get,F,n])=>{const v=get(l);return cell(n?n(l):v,T(F),typeof v==='string'?v:undefined)}).join('')}</tr>`}).join('')}</table>`}
+  return `<tr data-sid="${esc(s.id)}"><td style="text-align:left">${esc(prettyDate(s.date))}</td><td style="text-align:left">${esc(s.name||'Untitled')}</td>${lc.map(([,get,F,n])=>{const v=get(l);return cell(n?n(l):v,T(F),typeof v==='string'?v:undefined)}).join('')}</tr>`}).join('')}</table>`;renderProfGames()}
 $('playersView').addEventListener('click',e=>{
  const b=e.target.closest('[data-pp]');if(b){profP=b.dataset.pp;LS.set('profilePlayer',profP);renderPlayers();return}
  const td=e.target.closest('td.cl[data-f]');if(!td)return;
@@ -1368,15 +1719,15 @@ $('rAdd').onclick=()=>{const name=$('rName').value.trim();if(!name){st('Enter th
 $('rName').addEventListener('keydown',e=>{if(e.key==='Enter')$('rAdd').click()});
 ['ppFrom','ppTo'].forEach(i=>$(i).addEventListener('change',()=>{$(i).blur();renderPlayers()}));
 $('ppAllTime').onclick=()=>{$('ppFrom').value='';$('ppTo').value='';renderPlayers()};
-function drawAll(){drawPlayers();drawLineups();fillShooter();render()}
+function drawAll(){drawPlayers();drawLineups();fillShooter();drawSets();render()}
 
 // ---------- Boot ----------
 loadLocalLib();
 {const cur=LS.get('current'),s=cur&&lib.get(cur);if(s)S=s.s}
 fillFilters();
-if(cloud){cloudState('on','ok');refreshCloud();loadRoster();loadFolders()}
+if(cloud){cloudState('on','ok');refreshCloud();loadRoster();loadFolders();loadPlaybook();loadGames()}
 const savedTab=LS.get('tab');
-setTab(savedTab==='players'&&lib.size?'players':savedTab==='practices'||(!lib.size&&savedTab!=='code')?'practices':'code');
+setTab(savedTab==='games'?'games':savedTab==='players'&&lib.size?'players':savedTab==='practices'||(!lib.size&&savedTab!=='code')?'practices':'code');
 setInterval(tick,50);
 </script>
 </body>
