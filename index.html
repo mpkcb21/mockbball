@@ -122,6 +122,13 @@ dialog{border:2px solid var(--edge);border-radius:8px;padding:14px;max-width:680
 dialog::backdrop{background:rgba(0,0,0,.5)}
 dialog pre{background:var(--pre);border:1px solid var(--line);padding:8px;font-size:11px;overflow:auto;white-space:pre;color:var(--text);max-height:320px}
 .sec{font-size:12px;color:var(--muted);margin:8px 0 4px}
+/* movable coding boxes */
+[data-panel]>.hd{cursor:grab;user-select:none}
+[data-panel]>.hd::before{content:'⠿';border:0;background:none;width:auto;height:auto;top:4px;left:7px;color:var(--faint);font-size:14px;line-height:1}
+[data-panel].dragging{opacity:.35;outline:2px dashed var(--accent);outline-offset:-2px}
+body:not([data-tab=code]) #leftDock{display:none}
+body.dragging-panel :is(#leftDock,#codeWin){min-height:70px;outline:2px dashed var(--faint);outline-offset:-4px;border-radius:6px}
+body.dragging-panel #leftDock:empty::after{content:'Drop a box here to keep it under the video';display:block;padding:24px;text-align:center;color:var(--faint)}
 /* games */
 .gimport{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px;border-bottom:1px solid var(--line)}
 .gimport.drag{outline:3px dashed #F7D448;outline-offset:-6px}
@@ -220,6 +227,7 @@ body[data-tab=review] .chartgrid{grid-template-columns:minmax(0,1fr) minmax(0,1f
  </div></details>
  <button class="bt gry sm" id="cloudBtn">☁ Cloud: off</button>
  <button class="bt gry sm" id="themeBtn" title="Toggle light / dark">☀ Light</button>
+ <button class="bt gry sm code-only" id="layoutReset" title="Put the coding boxes back where they started">↺ Layout</button>
  <button class="bt gry sm code-only" id="reset">Reset</button>
 </div>
 
@@ -327,6 +335,7 @@ body[data-tab=review] .chartgrid{grid-template-columns:minmax(0,1fr) minmax(0,1f
   <div class="tl" id="tl" title="Click to seek. Colored bars are possessions, ticks are coded events."><div id="tlSegs"></div><div id="tlTicks"></div><div id="ph"></div></div>
  </div>
 
+ <div id="leftDock"></div>
  <div class="blk" id="clipsBlk">
   <div class="hd">CLIPS</div>
   <div class="banner hidden" id="banner"><span id="bannerTxt" style="flex:1"></span><button class="bt grn sm" id="bannerPlay">▶ Play all</button><button class="bt gry sm" id="bannerClear">Clear</button></div>
@@ -377,13 +386,12 @@ body[data-tab=review] .chartgrid{grid-template-columns:minmax(0,1fr) minmax(0,1f
   <div id="folderList" class="flist" style="max-height:230px;border-bottom:2px solid var(--edge)"></div>
   <div id="folderBody"></div>
  </div>
- <div class="blk" id="keysBlk">
+ <div id="codeWin">
+ <div class="blk" id="keysBlk" data-panel="keys">
   <div class="hd" style="cursor:pointer" id="keysHd" title="Show / hide">HOTKEYS<span id="keyLive" title="Green = hotkeys active. Grey = click anywhere on the page outside the video."></span><span id="keysTog" class="faint" style="position:absolute;right:8px;font-size:11px">hide</span></div>
   <div class="keys" id="keys"></div>
  </div>
-
- <div id="codeWin">
- <div class="blk">
+ <div class="blk" data-panel="poss">
   <div class="hd">POSSESSION</div>
   <div class="g" style="grid-template-columns:1fr 1fr">
    <button class="bt gold pos" id="posG" data-k="g">GOLD POSSESSION <small>G</small></button><button class="bt blue pos" id="posB" data-k="h">BLUE POSSESSION <small>H</small></button>
@@ -395,7 +403,7 @@ body[data-tab=review] .chartgrid{grid-template-columns:minmax(0,1fr) minmax(0,1f
   <div class="g" id="players" style="grid-template-columns:repeat(10,minmax(0,1fr))"></div>
  </div>
 
- <div class="blk">
+ <div class="blk" data-panel="shot">
   <div class="hd">SHOT</div>
   <div class="g" style="grid-template-columns:2fr 1fr 1fr">
    <button class="bt blk-bg" id="shotBtn" data-k="s" style="height:44px;font-size:14px">SHOT — open chart <small>S</small></button>
@@ -403,7 +411,7 @@ body[data-tab=review] .chartgrid{grid-template-columns:minmax(0,1fr) minmax(0,1f
   </div>
  </div>
 
- <div class="blk" id="setsBlk">
+ <div class="blk" id="setsBlk" data-panel="sets">
   <div class="hd">SETS<button class="x" id="pbEdit" style="position:absolute;right:8px;top:5px;font-size:11px">✎ edit sets</button></div>
   <div class="setrow"><span class="setlbl">OFF<small>⇧ + #</small></span><div class="setbtns" id="offSetBtns"></div></div>
   <div class="setrow"><span class="setlbl">DEF<small>⌥ + #</small></span><div class="setbtns" id="defSetBtns"></div></div>
@@ -411,10 +419,10 @@ body[data-tab=review] .chartgrid{grid-template-columns:minmax(0,1fr) minmax(0,1f
   <div id="pbEditor" class="hidden" style="padding:8px;border-top:1px solid var(--line)"></div>
  </div>
 
- <div class="blk"><div class="hd">OFFENSIVE STATS</div><div class="g" id="off" style="grid-template-columns:repeat(4,minmax(0,1fr))"></div></div>
- <div class="blk"><div class="hd">DEFENSIVE STATS</div><div class="g" id="def" style="grid-template-columns:repeat(4,minmax(0,1fr))"></div></div>
+ <div class="blk" data-panel="off"><div class="hd">OFFENSIVE STATS</div><div class="g" id="off" style="grid-template-columns:repeat(4,minmax(0,1fr))"></div></div>
+ <div class="blk" data-panel="def"><div class="hd">DEFENSIVE STATS</div><div class="g" id="def" style="grid-template-columns:repeat(4,minmax(0,1fr))"></div></div>
 
- <div class="blk"><div class="hd">LINEUPS</div>
+ <div class="blk" data-panel="lineups"><div class="hd">LINEUPS</div>
   <div class="g" id="lu" style="grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;padding:6px"></div>
  </div>
  </div>
@@ -1524,6 +1532,26 @@ async function loadGames(){if(!cloud)return;
   rows.forEach(r=>{const cg={...r.data,id:r.id,synced:true},g=games.find(x=>x.id===r.id);if(!g)games.push(cg);else if(T(cg.updated)>T(g.updated))Object.assign(g,cg);else g.synced=true});
   games.filter(g=>!g.synced).forEach(pushGame);storeGames();if(tab==='games')renderGames()}
  catch(err){if(/PGRST205|games/.test(err.message))st('Games need the updated setup SQL — copy it from ☁ Cloud and run it in Supabase.')}}
+
+// ---------- Movable coding boxes: drag a box by its header to reorder it or move it under the video ----------
+const DOCKS=['codeWin','leftDock'],DEFAULT_LAYOUT={codeWin:['keys','poss','shot','sets','off','def','lineups'],leftDock:[]};
+let dragPanel=null;
+const panelEl=id=>document.querySelector(`[data-panel="${id}"]`);
+function applyLayout(L){DOCKS.forEach(d=>((L&&L[d])||[]).forEach(id=>{const el=panelEl(id);if(el)$(d).appendChild(el)}))}
+function saveLayout(){LS.set('panelLayout',Object.fromEntries(DOCKS.map(d=>[d,[...$(d).children].filter(x=>x.dataset.panel).map(x=>x.dataset.panel)])))}
+// Only the header starts a drag, so buttons, selects and the court inside a box behave normally.
+document.addEventListener('mousedown',e=>{const hd=e.target.closest('[data-panel] > .hd');if(hd&&!e.target.closest('button,input,select,a,label'))hd.parentElement.draggable=true});
+document.addEventListener('mouseup',()=>document.querySelectorAll('[data-panel][draggable="true"]').forEach(p=>{if(p!==dragPanel)p.draggable=false}));
+document.addEventListener('dragstart',e=>{const p=e.target.closest&&e.target.closest('[data-panel]');if(!p||!p.draggable)return;
+ dragPanel=p;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',p.dataset.panel);document.body.classList.add('dragging-panel');setTimeout(()=>p.classList.add('dragging'))});
+document.addEventListener('dragend',()=>{if(!dragPanel)return;dragPanel.classList.remove('dragging');dragPanel.draggable=false;dragPanel=null;document.body.classList.remove('dragging-panel');saveLayout()});
+DOCKS.forEach(d=>{const dock=$(d);
+ dock.addEventListener('dragover',e=>{if(!dragPanel)return;e.preventDefault();
+  const next=[...dock.children].filter(c=>c.dataset.panel&&c!==dragPanel).find(c=>{const r=c.getBoundingClientRect();return e.clientY<r.top+r.height/2});
+  if(next){if(dragPanel.nextSibling!==next)dock.insertBefore(dragPanel,next)}else if(dock.lastElementChild!==dragPanel)dock.appendChild(dragPanel)});
+ dock.addEventListener('drop',e=>{if(dragPanel)e.preventDefault()})});
+$('layoutReset').onclick=()=>{applyLayout(DEFAULT_LAYOUT);LS.del('panelLayout');st('Coding boxes back in their original spots')};
+applyLayout(LS.get('panelLayout'));
 
 // ---------- Sets: tag each possession's offensive / defensive set, then see how they work ----------
 // Tags store the set's id (and its name as a fallback), so renaming a set carries its history with it.

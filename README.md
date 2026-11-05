@@ -83,6 +83,10 @@ A profile for each player built from every practice the app knows about: this br
 - **All-time shot chart and splits:** zone table (rim, paint, non-paint 2, 3PT and each 3 type), shot-grade table, and free throws. Click a dot to watch that shot, or click a zone row to filter the chart.
 - **Practice log:** one row per practice. Click any number to watch it from that practice only.
 
+## Arranging the coding screen
+
+Every box in the Code tab (Hotkeys, Possession, Shot, Sets, Offensive stats, Defensive stats, Lineups) can be dragged by its header (the ⠿ grip). Reorder them in the right column, or drop them under the video to keep them next to the film. The layout is remembered in this browser, and **↺ Layout** in the top bar puts everything back.
+
 ## How clipping works
 
 Press **P** (or GOLD / BLUE POSSESSION) when a possession starts. That marks the start of a new clip and ends the previous one. **Z** ends a clip without starting a new one (dead ball, water break). Every stat is stamped with the video time and lands in whichever possession it falls inside.
