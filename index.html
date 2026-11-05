@@ -11,13 +11,13 @@
  --text:#111;--muted:#555;--faint:#888;--btn:#D6D6D6;--btn-edge:#333;--input:#fff;--input-edge:#999;--hover:#f4f4f4;--th:#eee;
  --chip:#eee;--chip-edge:#ddd;--mk:#e3f4e1;--mk-edge:#b9e0b4;--ms:#fbe3dd;--ms-edge:#f0bcb0;--playing:#fff4c2;--hit:#ffe066;
  --tl:#eee;--strong:#111;--strong-text:#fff;--good:#2e7d32;--bad:#c62828;--accent:#ff3b30;--link:#0B3F86;--gold-text:#9a7b00;--pre:#f4f4f4;
- --banner:#fff8d6;--banner-edge:#e8d48a;--selrow:#fff8d6;color-scheme:light}
+ --banner:#fff8d6;--banner-edge:#e8d48a;--selrow:#fff8d6;--band:#eef1f5;--rowhover:#e1e9f5;color-scheme:light}
 :root[data-theme=dark]{
  --bg:#0b0d11;--app:#14171c;--bar:#1b1f26;--bar-edge:#2a2f38;--card:#181c22;--edge:#3b4250;--line:#2a2f38;--line2:#323844;
  --text:#e6e8eb;--muted:#a3a9b3;--faint:#717885;--btn:#2a2f38;--btn-edge:#454c59;--input:#0f1217;--input-edge:#3b4250;--hover:#20252d;--th:#20252d;
  --chip:#232831;--chip-edge:#343a46;--mk:#16341b;--mk-edge:#2b6a33;--ms:#3a1913;--ms-edge:#7a3326;--playing:#3a3312;--hit:#6b5a00;
  --tl:#0f1217;--strong:#05070a;--strong-text:#f2f2f2;--good:#5fd06b;--bad:#ff7a66;--accent:#ff453a;--link:#8fb6ff;--gold-text:#F7D448;--pre:#0f1217;
- --banner:#2e2a12;--banner-edge:#6b5a1a;--selrow:#262412;color-scheme:dark}
+ --banner:#2e2a12;--banner-edge:#6b5a1a;--selrow:#262412;--band:#242a34;--rowhover:#2e3644;color-scheme:dark}
 *{box-sizing:border-box}
 body{margin:0;padding:12px;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;color:var(--text)}
 button,select,input{font-family:inherit}
@@ -143,6 +143,10 @@ body.dragging-panel #leftDock:empty::after{content:'Drop a box here to keep it u
 .ghead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px}
 .ghead b{font-size:18px}
 .approx{color:var(--faint)}
+/* Games tab: banded rows (every other row a shade lighter) so wide box scores are easier to follow */
+#gamesView :is(.st,.ptable) tr:nth-child(odd):not(.sub):not(.tot):not(.on) td{background:var(--band)}
+#gamesView :is(.st,.ptable) tr:not(.sub):not(.tot):hover td{background:var(--rowhover)}
+#gamesView .st td,#gamesView .st th{border-color:var(--line)}
 a.plink{color:var(--link);cursor:pointer;text-decoration:none}a.plink:hover{text-decoration:underline}
 /* sets */
 .setrow{display:grid;grid-template-columns:52px minmax(0,1fr);border-bottom:1px solid var(--line)}
