@@ -134,6 +134,7 @@ Who's on the floor comes from the **Lineups** section while coding, so sub playe
 - A sub logged up to 2 seconds after a possession starts still counts for that possession, which allows for coder reaction time.
 - Each possession row shows who was on the floor (Gold and Blue). If one play's lineup is wrong, press **👥** on that row in the Code tab and change it. The change applies to that play only; plays before and after keep their lineups. The row is marked **✎ edited**, +/− and lineup combinations use the new five, and **Use logged** in the popup puts it back.
 - **Lineup combinations** (collapsed under the box score) show how 5-man lineups, 3-man groups or 2-man pairs did together: possessions, offensive and defensive points per possession, net, and +/−. Click a group's numbers to watch those possessions.
+- **Click a group's player names** to open its combined stats under the row, built from every possession those players were on the floor together across the practices in view. You get offense (possessions, points, PPP, empty %, FG, PPS, 3P, FT, TO, OREB, AST), defense (what the opponent did against them, plus steals, blocks, deflections, charges and defensive rebounds), and a player box covering only that time. Every number plays its possessions. Click the names again to close it.
 - Player profiles show career +/− and net rating too.
 - Hotkeys in Review mode only control video (Space, arrows, `[ ]`), so nothing gets coded by accident.
 

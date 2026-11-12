@@ -143,6 +143,10 @@ body.dragging-panel #leftDock:empty::after{content:'Drop a box here to keep it u
 .ghead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px}
 .ghead b{font-size:18px}
 .approx{color:var(--faint)}
+#combos td.cname{cursor:pointer;color:var(--link);font-weight:600}
+#combos td.cname:hover{text-decoration:underline}
+#combos tr.csel>td{background:var(--selrow)}
+#combos tr.cdet>td{padding:8px 10px 12px;background:var(--app);white-space:normal;text-align:left}
 /* Games tab: banded rows (every other row a shade lighter) so wide box scores are easier to follow */
 #gamesView :is(.st,.ptable) tr:nth-child(odd):not(.sub):not(.tot):not(.on) td{background:var(--band)}
 #gamesView :is(.st,.ptable) tr:not(.sub):not(.tot):hover td{background:var(--rowhover)}
@@ -445,7 +449,7 @@ body[data-tab=review] .chartgrid{grid-template-columns:minmax(0,1fr) minmax(0,1f
  <div id="setTables"></div>
  <div class="sec">Shot chart <span class="faint">(click a dot to watch that shot · click a player's name above to chart them)</span></div>
  <div id="sheetChart"></div>
- <details id="comboWrap" style="margin-top:8px"><summary class="sec" style="cursor:pointer">Lineup combinations <span class="faint">(optional) — how groups did together on the floor</span></summary>
+ <details id="comboWrap" style="margin-top:8px"><summary class="sec" style="cursor:pointer">Lineup combinations <span class="faint">(optional) — how groups did together on the floor · click a group's players for its combined stats</span></summary>
   <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:4px 0 6px">
    <label class="f" style="flex-direction:row;align-items:center;gap:6px">Group size<select id="comboK"><option value="5">5 — full lineups</option><option value="3">3-man</option><option value="2">2-man pairs</option></select></label>
    <label class="f" style="flex-direction:row;align-items:center;gap:6px">Min possessions<input type="number" id="comboMin" value="1" min="1" style="width:64px"></label>
@@ -1003,6 +1007,7 @@ $('statsBlk').addEventListener('click',e=>{
  const lg=e.target.closest('#log [data-del]');if(lg){del(+lg.dataset.del);return}
  const row=e.target.closest('#log [data-t]');if(row){const s=viewSessions()[0];jumpTo(s,+row.dataset.t-num('padPre',4));return}
  const pn=e.target.closest('td[data-chart]');if(pn){const p=pn.dataset.chart;sheetChart.setPlayer(sheetChart.player()===p?'':p);render();$('sheetChart').scrollIntoView({behavior:'smooth',block:'nearest'});return}
+ const cb=e.target.closest('td[data-combo]');if(cb){comboSel=comboSel===cb.dataset.combo?'':cb.dataset.combo;renderCombos(viewSessions());return}
  const td=e.target.closest('td.cl');if(!td)return;
  if(tab==='practices'){reviewSet=viewSessions();setTab('review')}
  setFilters({mode:'poss',...JSON.parse(td.dataset.f)});renderClips();
@@ -1264,11 +1269,27 @@ function render(){
  fillFilters();sheetChart.update(shotsIn(VS),{multi:VS.length});if(tab==='players')renderPlayers();if(tab==='library')renderLibrary();if(tab==='folders')renderFolders();renderTimeline();renderClips();renderName();lastT=-1}
 
 // ---------- Lineup combinations table (only computed while it's open) ----------
+// Combined stats for one lineup / group: every possession its players were on the floor together, across the practices in view.
+let comboSel='';
+function comboDetailHTML(VS,T,g){const ids=g.join(','),O=OTHER[T],off=[],def=[];
+ VS.forEach(s=>floorData(s).poss.forEach(x=>{if(!g.every(id=>x.L[T].includes(id)))return;(x.P.team===T?off:def).push(x)}));
+ const evs=(L,team)=>L.flatMap(x=>x.E.filter(e=>team==null||e.team===team));
+ const fr=a=>`${a.filter(e=>e.make).length}-${a.length}`,pps=a=>a.length?(a.reduce((t,e)=>t+pts(e),0)/a.length).toFixed(3):'–',pct=(a)=>a.length?Math.round(100*a.filter(e=>e.make).length/a.length)+'%':'–';
+ const side=(L,team,F,lab)=>{const E=evs(L,team),sh=E.filter(e=>e.k==='shot'),s3=sh.filter(e=>e.zone==='3'),ft=E.filter(e=>e.k==='ft'),p=E.reduce((a,e)=>a+pts(e),0),stops=L.filter(x=>x.pt[team]===0).length,c=st=>E.filter(e=>e.stat===st).length;
+  return{p,stops,row:`<td style="text-align:left">${lab}</td>${cell(L.length,F)}${cell(p,{...F,out:'score'})}<td>${ppp(p,L.length)}</td><td>${L.length?Math.round(100*stops/L.length)+'%':'–'}</td>${cell(sh.length,{...F,tag:'Shot'},fr(sh))}<td>${pct(sh)}</td><td>${pps(sh)}</td>${cell(s3.length,{...F,tag:'3PT'},fr(s3))}${cell(ft.length,{...F,tag:'FT'},fr(ft))}${cell(c('TO'),{...F,tag:'TO'})}${cell(c('OREB'),{...F,tag:'OREB'})}${cell(c('AST'),{...F,tag:'AST'})}`}};
+ const A=side(off,T,{on:ids,team:T},`<b>Offense</b> <span class="faint">(${T.toLowerCase()} ball)</span>`),D=side(def,O,{on:ids,team:O},`<b>Defense</b> <span class="faint">(opponent)</span>`);
+ const dE=evs(def,T),dc=st=>dE.filter(e=>e.stat===st).length;
+ const team=`<table class="st"><tr><th style="text-align:left"></th><th>Poss</th><th>Pts</th><th>PPP</th><th title="Possessions with 0 points">Empty</th><th>FG</th><th>FG%</th><th title="Points per shot: (2×2PM + 3×3PM) / FGA">PPS</th><th>3P</th><th>FT</th><th>TO</th><th>OREB</th><th>AST</th></tr><tr>${A.row}</tr><tr>${D.row}</tr></table>
+  <div class="faint" style="margin:4px 0">Net ${netStr({op:off.length,of:A.p,dp:def.length,da:D.p})} per possession · ${A.p}–${D.p} (${signed(A.p-D.p)}) · defense: ${dc('STL')} STL · ${dc('BLK')} BLK · ${dc('DFLC')} DFLC · ${dc('CHRG')} CHRG · ${dc('DREB')} DREB</div>`;
+ const all=[...off,...def],box=`<table class="st"><tr><th style="text-align:left">Player</th><th>Pts</th><th title="Points per shot">PPS</th><th>FG</th><th>3P</th><th>FT</th><th>REB</th>${STATS.map(x=>`<th title="${esc(x[1])}">${esc(x[0])}</th>`).join('')}</tr>${g.map(p=>{const E=evs(all).filter(e=>e.p===p),sh=E.filter(e=>e.k==='shot'),s3=sh.filter(e=>e.zone==='3'),ft=E.filter(e=>e.k==='ft'),c=st=>E.filter(e=>e.stat===st).length,F={on:ids,pl:p};
+  return `<tr><td style="text-align:left">${esc(pname(p))}</td>${cell(E.reduce((a,e)=>a+pts(e),0),{...F,tag:'Scoring'})}<td>${pps(sh)}</td>${cell(sh.length,{...F,tag:'Shot'},fr(sh))}${cell(s3.length,{...F,tag:'3PT'},fr(s3))}${cell(ft.length,{...F,tag:'FT'},fr(ft))}${cell(c('OREB')+c('DREB'),{...F,tag:'REB'})}${STATS.map(x=>cell(c(x[0]),{...F,tag:x[0]})).join('')}</tr>`}).join('')}</table>`;
+ return `<div class="cdetail"><div class="sec" style="margin-top:0">Together on the floor — ${all.length} possession${all.length===1?'':'s'}${VS.length>1?` across ${new Set(VS.filter(s=>floorData(s).poss.some(x=>g.every(id=>x.L[T].includes(id)))).map(s=>s.id)).size} practices`:''} <span class="faint">· click a number to watch</span></div>${team}<div class="sec">Player box <span class="faint">(only while this group was on the floor)</span></div><div style="overflow-x:auto">${box}</div></div>`}
 function renderCombos(VS){if(!$('comboWrap').open)return;
  const k=+$('comboK').value,min=Math.max(1,+$('comboMin').value||1),tm=$('comboTeam').value;
  const rows=comboStats(VS,k).filter(r=>r.op+r.dp>=min&&(!tm||r.T===tm));
  $('combos').innerHTML=rows.length?`<table class="st"><tr><th style="text-align:left">Team</th><th style="text-align:left">Players</th><th>Poss</th><th title="Offensive possessions / points per possession">Off</th><th title="Defensive possessions / points allowed per possession">Def</th><th>Net</th><th>Pts</th><th>+/−</th></tr>${rows.map(r=>{const n=r.op+r.dp;
-  return `<tr><td style="text-align:left;${TEAMCSS[r.T]}">${r.T}</td><td style="text-align:left;white-space:normal">${r.g.map(id=>esc(pname(id))).join(' · ')}</td>${cell(n,{on:r.g.join(',')})}<td>${r.op} · ${ppp(r.of,r.op)}</td><td>${r.dp} · ${ppp(r.da,r.dp)}</td><td>${netStr(r)}</td><td>${r.of}–${r.da}</td>${cell(n,{on:r.g.join(',')},`<span class="${r.pm>0?'pm-pos':r.pm<0?'pm-neg':''}">${signed(r.pm)}</span>`)}</tr>`}).join('')}</table>`
+  const ck=r.T+'|'+r.g.join(','),open=comboSel===ck;
+  return `<tr class="${open?'csel':''}"><td style="text-align:left;${TEAMCSS[r.T]}">${r.T}</td><td class="cname" data-combo="${esc(ck)}" style="text-align:left;white-space:normal" title="${open?'Hide':'Show'} this group's combined stats">${open?'▾':'▸'} ${r.g.map(id=>esc(pname(id))).join(' · ')}</td>${cell(n,{on:r.g.join(',')})}<td>${r.op} · ${ppp(r.of,r.op)}</td><td>${r.dp} · ${ppp(r.da,r.dp)}</td><td>${netStr(r)}</td><td>${r.of}–${r.da}</td>${cell(n,{on:r.g.join(',')},`<span class="${r.pm>0?'pm-pos':r.pm<0?'pm-neg':''}">${signed(r.pm)}</span>`)}</tr>${open?`<tr class="cdet"><td colspan="8">${comboDetailHTML(VS,r.T,r.g)}</td></tr>`:''}`}).join('')}</table>`
   :`<span class="faint">No ${k}-player groups${min>1?` with ${min}+ possessions`:''} yet — lineups come from the Lineups section while coding.</span>`}
 $('comboWrap').addEventListener('toggle',()=>{LS.set('combosOpen',$('comboWrap').open);renderCombos(viewSessions())});
 ['comboK','comboMin','comboTeam'].forEach(i=>$(i).addEventListener('change',()=>{$(i).blur();renderCombos(viewSessions())}));
