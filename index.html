@@ -23,6 +23,10 @@ body{margin:0;padding:12px;background:var(--bg);font-family:-apple-system,BlinkM
 button,select,input{font-family:inherit}
 a{color:var(--link)}
 .app{max-width:1500px;margin:0 auto;background:var(--app);border:1px solid var(--bar-edge);border-radius:10px;font-size:12px;overflow:hidden}
+.barshow{display:none;width:100%;border:0;border-bottom:1px solid var(--bar-edge);background:var(--bar);color:var(--muted);font:inherit;font-size:11px;padding:2px 0;cursor:pointer}
+.barshow:hover{color:var(--text);background:var(--hover)}
+body.bar-hidden .bar{display:none}
+body.bar-hidden .barshow{display:block}
 .bar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:var(--bar);padding:7px 10px;border-bottom:1px solid var(--bar-edge)}
 .foot{background:var(--bar);border-top:1px solid var(--bar-edge);padding:6px 10px;text-align:center;font-size:13px}
 
@@ -239,7 +243,9 @@ body[data-tab=review] .chartgrid{grid-template-columns:minmax(0,1fr) minmax(0,1f
  <button class="bt gry sm" id="themeBtn" title="Toggle light / dark">☀ Light</button>
  <button class="bt gry sm code-only" id="layoutReset" title="Put the coding boxes back where they started">↺ Layout</button>
  <button class="bt gry sm code-only" id="reset">Reset</button>
+ <button class="bt gry sm" id="barHide" title="Hide the top bar">▴</button>
 </div>
+<button id="barShow" class="barshow" title="Show the top bar">▾ <span id="barShowTab"></span></button>
 
 <!-- PRACTICES TAB -->
 <div id="practicesView">
@@ -691,7 +697,7 @@ const isEmpty=s=>!s.events.length&&!s.source&&!s.name;
 function persist(s){if(isEmpty(s))return;s.updated=new Date().toISOString();LS.set('s:'+s.id,s);libPut(s,{local:true});queueCloud(s)}
 function save(){persist(S);LS.set('current',S.id)}
 function loadLocalLib(){
- const RESERVED=['current','cloud','theme','mode','tab','keysHidden'],keys=[];
+ const RESERVED=['current','cloud','theme','mode','tab','keysHidden','barHidden'],keys=[];
  try{for(let i=0;i<localStorage.length;i++)keys.push(localStorage.key(i))}catch(_){}
  keys.filter(k=>k&&k.startsWith('mockbball:')).forEach(k=>{const rest=k.slice(10);if(RESERVED.includes(rest))return;
   const d=LS.get(rest);if(!d||!Array.isArray(d.events))return;
@@ -1014,7 +1020,7 @@ $('statsBlk').addEventListener('click',e=>{
  playQueue(L,0,false);$('videoBlk').scrollIntoView({behavior:'smooth',block:'start'})});
 
 // ---------- Tabs ----------
-function setTab(t){tab=t;document.body.dataset.tab=t;
+function setTab(t){tab=t;document.body.dataset.tab=t;setTimeout(()=>{if(typeof barLabel==='function')barLabel()});
  ['Practices','Games','Code','Review','Library','Folders','Players'].forEach(n=>$('tab'+n).classList.toggle('on',t===n.toLowerCase()));
  if(t!=='code'&&shotOpen())closeShot();
  if(t==='practices'){$('practicesView').appendChild($('statsBlk'));stopQueue();src.pause();renderPractices()}
@@ -1117,6 +1123,11 @@ $('keys').innerHTML=KEYS.map(([g,rows])=>`<h4>${g}</h4>`+rows.map(([k,l,id])=>`<
 function setKeysHidden(h){$('keys').classList.toggle('hidden',h);$('keysTog').textContent=h?'show':'hide';LS.set('keysHidden',h)}
 $('keysHd').onclick=()=>setKeysHidden(!$('keys').classList.contains('hidden'));
 if(LS.get('keysHidden'))setKeysHidden(true);
+// Top bar can be tucked away for more room; a thin strip at the top brings it back.
+function setBarHidden(h){document.body.classList.toggle('bar-hidden',h);LS.set('barHidden',h);barLabel()}
+function barLabel(){const b=$('barShowTab');if(b)b.textContent=`Practice CW · ${(document.querySelector('.seg-ctl .bt.on')||{}).textContent||''} — show menu`}
+$('barHide').onclick=()=>setBarHidden(true);$('barShow').onclick=()=>setBarHidden(false);
+if(LS.get('barHidden'))setBarHidden(true);
 function flash(...ids){ids.forEach(id=>document.querySelectorAll(`[data-k="${CSS.escape(id)}"]`).forEach(el=>{el.classList.add('hit');setTimeout(()=>el.classList.remove('hit'),220)}))}
 const VIDEO_ACTIONS={' ':togglePlay,'[':()=>stepClip(-1),']':()=>stepClip(1)};
 const ACTIONS={...VIDEO_ACTIONS,p:flipPoss,g:()=>startPoss('GOLD'),h:()=>startPoss('BLUE'),z:endPoss,s:toggleShot,x:()=>ft(false),'-':()=>ft(false),'+':()=>ft(true),'=':()=>ft(true)};
