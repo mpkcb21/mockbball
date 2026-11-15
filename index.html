@@ -25,7 +25,7 @@ a{color:var(--link)}
 .app{max-width:1500px;margin:0 auto;background:var(--app);border:1px solid var(--bar-edge);border-radius:10px;font-size:12px;overflow:hidden}
 .bar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:var(--bar);padding:7px 10px;border-bottom:1px solid var(--bar-edge)}
 .foot{background:var(--bar);border-top:1px solid var(--bar-edge);padding:6px 10px;text-align:center;font-size:13px}
-.dot{width:11px;height:11px;border-radius:50%}
+
 .muted{color:var(--muted)}.faint{color:var(--faint)}
 .main{display:grid;grid-template-columns:minmax(0,1fr) 470px;gap:0;align-items:start}
 body:is([data-tab=review],[data-tab=library],[data-tab=folders]) .main{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
@@ -222,8 +222,7 @@ body[data-tab=review] .chartgrid{grid-template-columns:minmax(0,1fr) minmax(0,1f
 <div id="focusSink" tabindex="-1" style="position:fixed;left:-9999px;top:0"></div>
 <div class="app">
 <div class="bar">
- <span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span>
- <span style="margin-left:8px;font-weight:500">Practice CW</span>
+ <span style="font-weight:500">Practice CW</span>
  <span class="seg-ctl" style="margin-left:6px"><button class="bt sm" id="tabPractices">Practices</button><button class="bt sm" id="tabGames">Games</button><button class="bt sm on" id="tabCode">Code</button><button class="bt sm" id="tabReview">Review</button><button class="bt sm" id="tabLibrary">Library</button><button class="bt sm" id="tabFolders">My folders</button><button class="bt sm" id="tabPlayers">Players</button></span>
  <input id="sessName" class="txt code-only" placeholder="Practice name" style="margin-left:6px;width:200px">
  <input id="sessDate" type="date" class="txt code-only" style="width:140px">
